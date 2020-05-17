@@ -1,0 +1,80 @@
+{
+  "name": "d3-charts",
+  "version": "1.0.0",
+  "description": "react d3 charts with styled-components",
+  "main": "index.js",
+  "homepage": "http://kre1z0.github.io/d3-charts",
+  "scripts": {
+    "start": "cross-env NODE_ENV=development webpack-dev-server --config ./config/webpack.dev.js --progress --inline",
+    "build": "cross-env NODE_ENV=production webpack --config ./config/webpack.prod.js --progress --inline",
+    "deploy": "gh-pages -d dist",
+    "prettier": "prettier --write \"**/*.js\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kre1z0/d3-charts.git"
+  },
+  "author": "Kre1z0",
+  "license": "MIT",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version",
+      "last 1 ie version"
+    ]
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.6",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
+    "@babel/plugin-transform-runtime": "^7.9.6",
+    "@babel/preset-env": "^7.9.6",
+    "@babel/preset-react": "^7.9.4",
+    "@babel/preset-stage-2": "^7.8.3",
+    "@svgr/webpack": "^5.4.0",
+    "autoprefixer": "^9.7.6",
+    "babel-loader": "^8.1.0",
+    "babel-plugin-styled-components": "^1.10.7",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
+    "babel-plugin-transform-object-assign": "^6.22.0",
+    "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
+    "circular-dependency-plugin": "^5.2.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^5.1.1",
+    "cross-env": "^7.0.2",
+    "css-loader": "^3.5.3",
+    "dynamic-cdn-webpack-plugin": "^5.0.0",
+    "file-loader": "^6.0.0",
+    "html-webpack-plugin": "^4.3.0",
+    "module-to-cdn": "^3.1.5",
+    "postcss-flexbugs-fixes": "^4.2.1",
+    "postcss-loader": "3.0.0",
+    "prettier": "^2.0.5",
+    "style-loader": "^1.2.1",
+    "terser-webpack-plugin": "^3.0.1",
+    "unused-files-webpack-plugin": "^3.4.0",
+    "url-loader": "^4.1.0",
+    "warning": "^4.0.3",
+    "webpack": "^4.43.0",
+    "webpack-bundle-analyzer": "^3.7.0",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.11.0",
+    "webpack-merge": "^4.2.2"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.8.7",
+    "@hot-loader/react-dom": "^16.13.0",
+    "d3": "^5.16.0",
+    "gh-pages": "^2.2.0",
+    "react": "^16.13.1",
+    "react-hot-loader": "^4.12.21",
+    "styled-components": "^5.1.0"
+  }
+}
