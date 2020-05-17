@@ -1,18 +1,19 @@
 import styled from "styled-components";
 
 export const Container = styled.div`
-  .line {
+  max-width: 800px;
+  height: 300px;
+  line {
+    stroke-width: 2;
+    stroke: #00ff57;
+  }
+
+  path {
+    stroke-width: 2;
     fill: none;
     stroke: #ffab00;
-    stroke-width: 2;
   }
 
-  .overlay {
-    fill: none;
-    pointer-events: all;
-  }
-
-  /* Style the dots by assigning a fill and stroke */
   .dot {
     fill: #ffab00;
     stroke: #fff;
