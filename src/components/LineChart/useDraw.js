@@ -1,17 +1,18 @@
 import * as d3 from "d3";
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 
 export function useDraw(props) {
-  const [rect, setRect] = useState(null);
   const ref = useCallback(
     (node) => {
-      const { height, data, labels, colors } = props;
-      const width = Math.min(props.width, node.getBoundingClientRect().width);
-      const ticksStrokeWith = 1;
-      const linesStrokeWith = 2;
-      const xScaleHeight = 40;
-
       if (node !== null) {
+        console.info("--> ggwp 4444");
+        const { height, labels, colors } = props;
+        const data = Array.isArray(props.data[0]) ? props.data : [props.data];
+        const width = Math.min(props.width, node.getBoundingClientRect().width);
+        const ticksStrokeWith = 1;
+        const linesStrokeWith = 2;
+        const xScaleHeight = 40;
+
         /** SVG **/
         d3.select(node).select("svg").remove();
         const svg = d3.select(node).append("svg").attr("viewBox", `0 0 ${width} ${height}`);
@@ -116,11 +117,9 @@ export function useDraw(props) {
             .attr("transform", `translate(${xScale(0)}, ${yScale(dataset[0].y)})`)
             .attr("shape-rendering", "crispEdges");
         }
-
-        setRect();
       }
     },
     [props],
   );
-  return [rect, ref];
+  return [ref];
 }

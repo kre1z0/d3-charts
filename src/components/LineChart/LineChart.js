@@ -6,7 +6,7 @@ import { Container } from "./styled";
 
 export const LineChartD3Base = (props) => {
   const { width, height } = props;
-  const [_, ref] = useDraw(props);
+  const [ref] = useDraw(props);
 
   return <Container ref={ref} width={width} height={height} />;
 };
