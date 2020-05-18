@@ -1,15 +1,12 @@
 import styled from "styled-components";
 
 export const Container = styled.div`
-  max-width: 800px;
-  height: 300px;
+  max-width: 1200px;
   line {
-    stroke-width: 2;
-    stroke: #00ff57;
+    stroke: #c6c6c6;
   }
 
   path {
-    stroke-width: 2;
     fill: none;
     stroke: #ffab00;
   }
@@ -17,6 +14,10 @@ export const Container = styled.div`
   .dot {
     fill: #ffab00;
     stroke: #fff;
+  }
+
+  text {
+    color: #c6c6c6;
   }
 
   .focus circle {

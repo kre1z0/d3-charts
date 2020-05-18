@@ -5,57 +5,26 @@ export function useDraw(props) {
   const [rect, setRect] = useState(null);
   const ref = useCallback(
     (node) => {
-      const { width, height } = props;
+      const { width, height, data, labels } = props;
+      const ticksStrokeWith = 1;
+      const linesStrokeWith = 2;
+      const xScaleHeight = 40;
 
       if (node !== null) {
-        const margin = { top: 0, right: 40, bottom: 20, left: 40 };
-        const widthValue = width - margin.left - margin.right;
-        const heightValue = height - margin.top - margin.bottom;
-
-        // The number of datapoints
-        const data = [200, 224, 380, 198, 255, 100, 250, 234, 210];
-        const dates = [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018];
-
-        // 5. X scale will use the index of our data
-        const xScale = d3
-          .scaleLinear()
-          .domain([0, data.length - 1])
-          .range([0, widthValue]);
-
-        const yScale = d3
-          .scaleLinear()
-          .domain([0, d3.max(data, (d) => d) * 1.14])
-          .range([heightValue, 0]);
-
-        const line = d3
-          .line()
-          .x((d, i) => xScale(i)) // set the x values for the line generator
-          .y((d) => yScale(d.y)) // set the y values for the line generator
-          .curve(d3.curveMonotoneX); // apply smoothing to the line
-
-        // 8. An array of objects of length N. Each object has key -> value pair, the key being "y" and the value is a random number
+        /** Dataset **/
         const dataset = d3.range(data.length).map((n) => ({ y: data[n] }));
 
-        // 1. Add the SVG to the page and employ #2
-        const svg = d3
-          .select(node)
-          .append("svg")
-          .attr("viewBox", `0 0 ${width} ${height}`)
-          .append("g")
-          .attr("transform", `translate(${margin.left}, ${margin.top})`);
+        /** SVG **/
+        d3.select(node).select("svg").remove();
+        const svg = d3.select(node).append("svg").attr("viewBox", `0 0 ${width} ${height}`);
+        const yScaleXRange = height - linesStrokeWith - ticksStrokeWith - xScaleHeight;
 
-        // 3. Call the x axis in a group tag
-        svg
-          .append("g")
-          .attr("class", "x axis")
-          .attr("transform", `translate(0, ${heightValue})`)
-          .call(d3.axisBottom(xScale).tickFormat((i) => dates[i]))
-          .call((g) => {
-            g.select(".domain").remove();
-            g.selectAll("line").remove();
-          });
+        /** Y - axis **/
+        const yScale = d3
+          .scaleLinear()
+          .domain([0, d3.max(data, (d) => d) * 1.24])
+          .range([yScaleXRange, 0]);
 
-        // 4. Call the y axis in a group tag
         svg
           .append("g")
           .attr("class", "y axis")
@@ -63,20 +32,58 @@ export function useDraw(props) {
           .call((g) => {
             g.select(".domain").remove();
             g.selectAll("line")
-              .attr("x2", widthValue)
-              .attr("x1", 5)
-              .attr("x2", widthValue)
+              .attr("stroke-width", ticksStrokeWith)
+              .attr("x2", width)
+              .attr("x1", 0)
+              .attr("x2", width)
               .attr("shape-rendering", "crispEdges");
           });
 
-        // 9. Append the path, bind the data, and call the line generator
-        svg
-          .append("path")
-          .datum(dataset) // 10. Binds data to the line
-          .attr("class", "line") // Assign a class for styling
-          .attr("d", line);
+        /** X - axis **/
+        const xScale = d3
+          .scaleLinear()
+          .domain([0, data.length - 1])
+          .range([0, width]);
 
-        // 12. Appends a circle for each datapoint
+        svg
+          .append("g")
+          .attr("class", "x axis")
+          .call(d3.axisBottom(xScale).tickFormat((i) => labels[i]))
+          .call((g) => {
+            let maxWidth = 0;
+            svg
+              .select(".y.axis")
+              .selectAll("text")
+              .each((i, n, elem) => {
+                const width = elem[n].getBoundingClientRect().width;
+                maxWidth = Math.max(maxWidth, width);
+              });
+            const yPadding = maxWidth;
+
+            const xAxisWidth = g.node().getBoundingClientRect().width;
+            const diff = (xAxisWidth - width + linesStrokeWith * 2) / 2;
+
+            svg.select(".y.axis").attr("transform", `translate(${maxWidth + diff}, 0)`);
+
+            xScale.range([diff + yPadding + diff, width - diff]);
+            g.attr("transform", `translate(0, ${height - xScaleHeight + 10})`);
+            g.select(".domain").remove();
+            g.selectAll("line").remove();
+          })
+          .selectAll(".tick")
+          .data(data)
+          .join(".tick")
+          .attr("transform", (d, i) => `translate(${xScale(i)}, 0)`);
+
+        /** Path **/
+        const line = d3
+          .line()
+          .x((d, i) => xScale(i))
+          .y((d) => yScale(d.y) + ticksStrokeWith)
+          .curve(d3.curveMonotoneX);
+        svg.append("path").datum(dataset).attr("d", line).attr("stroke-width", linesStrokeWith);
+
+        /** Dots **/
         svg
           .selectAll(".dot")
           .data(dataset)
@@ -84,7 +91,7 @@ export function useDraw(props) {
           .append("circle") // Uses the enter().append() method
           .attr("class", "dot") // Assign a class for styling
           .attr("cx", (d, i) => xScale(i))
-          .attr("cy", (d) => yScale(d.y))
+          .attr("cy", (d) => yScale(d.y) + ticksStrokeWith)
           .attr("r", 5)
           .on("mousemove", (d, g, e) => {
             console.info("--> mousemove ggwp 4444 event", { d, g, e });
