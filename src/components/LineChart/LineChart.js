@@ -5,9 +5,10 @@ import { useDraw } from "./useDraw";
 import { Container } from "./styled";
 
 export const LineChartD3Base = (props) => {
+  const { width, height } = props;
   const [_, ref] = useDraw(props);
 
-  return <Container ref={ref} />;
+  return <Container ref={ref} width={width} height={height} />;
 };
 
 LineChartD3Base.defaultProps = {
@@ -18,6 +19,7 @@ LineChartD3Base.defaultProps = {
     [211, 231, 122, 55, 198, 12, 130, 220, 440],
   ],
   labels: [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018],
+  colors: ["#FFC34F", "#73CFCA"],
 };
 
 export const LineChartD3 = hot(LineChartD3Base);
