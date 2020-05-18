@@ -6,7 +6,7 @@ export const Container = styled.div.attrs(({ width, height }) => ({
     height,
   },
 }))`
-  line {
+  .tick line {
     stroke: #c6c6c6;
   }
 
@@ -18,7 +18,8 @@ export const Container = styled.div.attrs(({ width, height }) => ({
     fill: transparent;
   }
 
-  text {
+  text,
+  .tick {
     color: #c6c6c6;
   }
 

@@ -5,7 +5,8 @@ export function useDraw(props) {
   const [rect, setRect] = useState(null);
   const ref = useCallback(
     (node) => {
-      const { width, height, data, labels, colors } = props;
+      const { height, data, labels, colors } = props;
+      const width = Math.min(props.width, node.getBoundingClientRect().width);
       const ticksStrokeWith = 1;
       const linesStrokeWith = 2;
       const xScaleHeight = 40;
@@ -20,7 +21,7 @@ export function useDraw(props) {
         /** Y - axis **/
         const yScale = d3
           .scaleLinear()
-          .domain([0, d3.max(data, (array) => d3.max(array, (d) => d * 1.24))])
+          .domain(d3.extent(data.reduce((m, d) => m.concat(d.map((n) => n * 1.24)), [])))
           .range([yScaleXRange, 0]);
 
         svg
@@ -103,6 +104,17 @@ export function useDraw(props) {
             .attr("cx", (d, index) => xScale(index))
             .attr("cy", (d) => yScale(d.y) + ticksStrokeWith)
             .attr("r", 5);
+
+          /** Dashed line **/
+          svg
+            .append("line")
+            .attr("stroke", colors[i])
+            .attr("stroke-width", 2)
+            .attr("x1", 0)
+            .attr("x2", width)
+            .attr("stroke-dasharray", "6 2")
+            .attr("transform", `translate(${xScale(0)}, ${yScale(dataset[0].y)})`)
+            .attr("shape-rendering", "crispEdges");
         }
 
         setRect();
