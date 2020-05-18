@@ -5,7 +5,6 @@ export function useDraw(props) {
   const ref = useCallback(
     (node) => {
       if (node !== null) {
-        console.info("--> ggwp 4444");
         const { height, labels, colors } = props;
         const data = Array.isArray(props.data[0]) ? props.data : [props.data];
         const width = Math.min(props.width, node.getBoundingClientRect().width);
@@ -66,7 +65,7 @@ export function useDraw(props) {
             svg.select(".y.axis").attr("transform", `translate(${maxWidth + diff}, 0)`);
 
             xScale.range([diff + yPadding + diff, width - diff]);
-            g.attr("transform", `translate(0, ${height - xScaleHeight + 10})`);
+            g.attr("transform", `translate(0, ${height - xScaleHeight})`);
             g.select(".domain").remove();
             g.selectAll("line").remove();
           })

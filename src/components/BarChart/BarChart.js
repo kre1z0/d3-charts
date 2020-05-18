@@ -3,14 +3,14 @@ import React from "react";
 import { useDraw } from "./useDraw";
 import { Container } from "./styled";
 
-export const LineChart = (props) => {
+export const BarChart = (props) => {
   const { width, height } = props;
   const [ref] = useDraw(props);
 
   return <Container ref={ref} width={width} height={height} />;
 };
 
-LineChart.defaultProps = {
+BarChart.defaultProps = {
   width: 1200,
   height: 300,
   data: [
