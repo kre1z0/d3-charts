@@ -12,7 +12,7 @@ const randomData = ({ length, count = 1, from = 0, to = 100 }) => {
 
 export const lineChartRandomData = () => randomData({ length: 10, count: 2, from: -200, to: 400 });
 
-export const barChartRandomData = () => {
+export const stackedBarChartRandomData = () => {
   const names = [
     "Численность населения",
     "ВГП на дущу населения",
@@ -24,12 +24,12 @@ export const barChartRandomData = () => {
   ];
 
   return names.map((name) => {
-    const d = 140;
-    const r = random(-20, 120);
+    const upper = 100;
+    const r = random(-40, upper);
     return {
       name,
       inertial: r,
-      scenario: d - r,
+      scenario: upper - r,
     };
   });
 };

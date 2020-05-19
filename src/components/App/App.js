@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { hot } from "react-hot-loader/root";
 
-import { lineChartRandomData, barChartRandomData } from "helpers/development/random";
+import { lineChartRandomData, stackedBarChartRandomData } from "helpers/development/random";
 import { GlobalStyle } from "styles";
 import { LineChart } from "components/LineChart/LineChart";
-import { BarChart } from "components/BarChart/BarChart";
+import { StackedBarChart } from "components/StackedBarChart/StackedBarChart";
 import { Item } from "components/App/styled";
 
 export const App = hot(() => {
   const [lineChartData, onLineChartRandom] = useState(lineChartRandomData());
-  const [barChartData, onBarChartRandom] = useState(barChartRandomData());
+  const [stackedBarChartData, onStackedBarChartRandom] = useState(stackedBarChartRandomData());
 
   return (
     <>
@@ -22,10 +22,10 @@ export const App = hot(() => {
       </Item>
 
       <Item>
-        <button onClick={() => onBarChartRandom(barChartRandomData())}>Randomize data</button>
+        <button onClick={() => onStackedBarChartRandom(stackedBarChartRandomData())}>Randomize data</button>
         <br />
         <br />
-        <BarChart data={barChartData} />
+        <StackedBarChart data={stackedBarChartData} />
       </Item>
     </>
   );

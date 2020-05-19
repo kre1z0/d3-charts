@@ -8,7 +8,7 @@ export function useDraw(props) {
   const ref = useCallback(
     (node) => {
       if (node !== null && props.data.length) {
-        const { data, height, labels, colors } = props;
+        const { data, height, colors } = props;
         const width = Math.min(props.width, node.getBoundingClientRect().width);
         /** SVG **/
         d3.select(node).select("svg").remove();
@@ -95,7 +95,7 @@ export function useDraw(props) {
           .attr("shape-rendering", "crispEdges");
       }
     },
-    [props],
+    [props.data],
   );
   return [ref];
 }

@@ -118,7 +118,7 @@ export function useDraw(props) {
         }
       }
     },
-    [props],
+    [props.data],
   );
   return [ref];
 }
