@@ -2,10 +2,8 @@ const merge = require("webpack-merge");
 const common = require("./webpack.common");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
-const DynamicCdnWebpackPlugin = require("dynamic-cdn-webpack-plugin");
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
 
-const cdnResolvers = require(`./cdn-resolvers`);
 const { entry } = require("./paths");
 
 module.exports = merge(common, {
@@ -27,9 +25,6 @@ module.exports = merge(common, {
       analyzerMode: "static",
       reportFilename: "report.html",
       openAnalyzer: false,
-    }),
-    new DynamicCdnWebpackPlugin({
-      resolver: cdnResolvers,
     }),
   ],
   optimization: {

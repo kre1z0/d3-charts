@@ -10,4 +10,10 @@ export const commontStyles = css`
   * {
     box-sizing: border-box;
   }
+
+  button {
+    background: none;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
 `;

@@ -1,18 +1,13 @@
 import * as d3 from "d3";
 import { useCallback } from "react";
 
-function stackMin(serie) {
-  return d3.min(serie, (d) => d[0]);
-}
-
-function stackMax(serie) {
-  return d3.max(serie, (d) => d[1]);
-}
+import { wrapByWidth } from "helpers/wrapByWidth";
+import { stackMin, stackMax } from "helpers/stack";
 
 export function useDraw(props) {
   const ref = useCallback(
     (node) => {
-      if (node !== null) {
+      if (node !== null && props.data.length) {
         const { data, height, labels, colors } = props;
         const width = Math.min(props.width, node.getBoundingClientRect().width);
         /** SVG **/
@@ -40,8 +35,10 @@ export function useDraw(props) {
           .append("g")
           .attr("transform", `translate(${margin.left - 20}, ${y(d3.min(series, stackMin))})`)
           .call(d3.axisBottom(x))
-          .selectAll("line, .domain")
-          .remove();
+          .call((g) => {
+            g.selectAll("line, .domain").remove();
+            g.selectAll(".tick text").call(wrapByWidth, 80);
+          });
 
         svg
           .append("g")
