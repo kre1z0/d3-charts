@@ -17,19 +17,18 @@ export function useDraw(props) {
         const width = Math.min(props.width, node.getBoundingClientRect().width);
         /** SVG **/
         d3.select(node).select("svg").remove();
+        const keys = Object.keys(data[0]).slice(1);
 
-        const series = d3.stack().keys(["apples", "bananas", "cherries", "dates"]).offset(d3.stackOffsetDiverging)(
-          data,
-        );
+        const series = d3.stack().keys(keys).offset(d3.stackOffsetDiverging)(data);
 
         const svg = d3.select(node).append("svg").attr("viewBox", [0, 0, width, height]);
-        const margin = { top: 20, right: 30, bottom: 30, left: 60 };
+        const margin = { top: 20, right: 0, bottom: 30, left: 60 };
 
         const x = d3
           .scaleBand()
           .domain(data.map((d) => d.name))
           .rangeRound([margin.left, width - margin.right])
-          .padding(0.1);
+          .padding(0.75);
 
         const y = d3
           .scaleLinear()
