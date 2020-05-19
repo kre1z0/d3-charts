@@ -10,7 +10,7 @@ export function useDraw(props) {
         const width = Math.min(props.width, node.getBoundingClientRect().width);
         const ticksStrokeWith = 1;
         const linesStrokeWith = 2;
-        const xScaleHeight = 40;
+        const xScaleHeight = 20;
 
         /** SVG **/
         d3.select(node).select("svg").remove();

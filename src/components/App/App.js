@@ -29,7 +29,7 @@ export const App = hot(() => {
         <button onClick={() => onBarChartRandom(barChartRandomData())}>Randomize data</button>
         <br />
         <br />
-        <BarChart data={barChartData} />
+        <BarChart />
       </Item>
     </>
   );
