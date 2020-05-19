@@ -5,4 +5,8 @@ export const Container = styled.div.attrs(({ width, height }) => ({
     maxWidth: width,
     height,
   },
-}))``;
+}))`
+  text {
+    color: #b7b9bd;
+  }
+`;

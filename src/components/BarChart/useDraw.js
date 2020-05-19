@@ -27,8 +27,9 @@ export function useDraw(props) {
         const x = d3
           .scaleBand()
           .domain(data.map((d) => d.name))
-          .rangeRound([margin.left, width - margin.right])
-          .padding(0.75);
+          .rangeRound([0, width - 20])
+          .padding(0.75)
+          .paddingOuter(0.45);
 
         const y = d3
           .scaleLinear()
@@ -37,18 +38,24 @@ export function useDraw(props) {
 
         svg
           .append("g")
-          .attr("transform", "translate(0," + y(d3.min(series, stackMin)) + ")")
+          .attr("transform", `translate(${margin.left - 20}, ${y(d3.min(series, stackMin))})`)
           .call(d3.axisBottom(x))
           .selectAll("line, .domain")
           .remove();
 
         svg
           .append("g")
-          .attr("transform", "translate(" + margin.left + ",0)")
-          .call(d3.axisLeft(y).tickFormat((d) => `${d}%`))
+          .attr("transform", `translate(${margin.left},0)`)
+          .call(
+            d3
+              .axisLeft(y)
+              .ticks(8)
+              .tickFormat((d) => `${d}%`),
+          )
           .call((g) => {
             g.selectAll(".domain").remove();
             g.selectAll("line")
+              .attr("stroke", "#F4F5F5")
               .attr("stroke-width", 1)
               .attr("x2", width)
               .attr("x1", 0)
@@ -64,6 +71,7 @@ export function useDraw(props) {
         svg
           .append("g")
           .attr("class", "bar-container")
+          .attr("transform", `translate(${margin.left - 20},0)`)
           .selectAll("g")
           .data(series)
           .enter()
@@ -83,7 +91,7 @@ export function useDraw(props) {
           .attr("transform", `translate(${margin.left},${y(0)})`)
           .attr("class", "zero-tick")
           .attr("stroke-width", 1)
-          .attr("stroke", "black")
+          .attr("stroke", "#94A0A5")
           .attr("x2", width)
           .attr("x1", 0)
           .attr("x2", width)
