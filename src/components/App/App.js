@@ -10,6 +10,7 @@ import { GlobalStyle } from "styles";
 import { LineChart } from "components/LineChart/LineChart";
 import { StackedBarChart } from "components/StackedBarChart/StackedBarChart";
 import { HorizontalBarChart } from "components/HorizontalBarChart/HorizontalBarChart";
+import { PercentBarChart } from "components/PercentBarChart/PercentBarChart";
 import { Item } from "components/App/styled";
 
 export const App = hot(() => {
@@ -32,6 +33,12 @@ export const App = hot(() => {
         <br />
         <br />
         <StackedBarChart data={stackedBarChartData} />
+      </Item>
+      <Item>
+        <button>Randomize data</button>
+        <br />
+        <br />
+        <PercentBarChart />
       </Item>
       <Item>
         <button onClick={() => onHorizontalBarChartRandom(horizontalBarChartRandomData())}>Randomize data</button>
