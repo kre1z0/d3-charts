@@ -1,14 +1,17 @@
 import * as d3 from "d3";
 import { useCallback } from "react";
 
+import { roundedRect } from "helpers/rect";
+import { getWidthByPercent } from "helpers/stack";
+
 export function useDraw(props) {
   const ref = useCallback(
     (node) => {
       if (node !== null) {
-        const { labels, colors } = props;
-        const data = Array.isArray(props.data[0]) ? props.data : [props.data];
+        const { colors, data } = props;
+        const labels = Object.keys(props.data).sort((a, b) => b - a);
         const width = Math.min(props.width, node.getBoundingClientRect().width);
-        const barHeight = 18;
+        const barHeight = 16;
         const barPadding = 4;
         const margin = { top: 0, right: 80, bottom: 20, left: 40 };
         const height = Math.ceil(labels.length * barHeight) + barPadding * labels.length + margin.top + margin.bottom;
@@ -54,18 +57,53 @@ export function useDraw(props) {
           .selectAll(".domain, line")
           .remove();
 
-        svg
-          .append("g")
-          .attr("transform", `translate(${margin.left},0)`)
-          .attr("fill", "#F4F7F9")
-          .selectAll("rect")
-          .data(labels)
-          .join("rect")
-          .attr("rx", 10)
-          .attr("ry", 10)
-          .attr("height", barHeight)
-          .attr("width", width - margin.left)
-          .attr("transform", (n, i) => `translate(${0}, ${barHeight * i + (i > 0 ? barPadding * i + 1 : 0)})`);
+        for (let i = 0; i < labels.length; i++) {
+          const yearData = data[labels[i]];
+
+          svg
+            .append("g")
+            .attr("transform", `translate(${margin.left}, ${barHeight * i + (i > 0 ? barPadding * i + 1 : 0)})`)
+            .selectAll("path")
+            .data(yearData)
+            .join("path")
+            .attr("fill", (d, index) => colors[index])
+            .attr("d", (d, index, elements) => {
+              const w = Math.ceil(getWidthByPercent(width - margin.left, d));
+              const sum = yearData.slice(0, index).reduce((acc, curr) => acc + curr, 0);
+              const x = Math.ceil(index > 0 ? getWidthByPercent(width - margin.left, sum) : 0);
+
+              if (colors[index].includes("base64")) {
+                const foreignObject = document.createElementNS("http://www.w3.org/2000/svg", "foreignObject");
+                foreignObject.setAttributeNS(null, "width", w);
+                foreignObject.setAttributeNS(null, "height", barHeight);
+                foreignObject.setAttributeNS(null, "x", x);
+                foreignObject.setAttributeNS(null, "y", 0);
+                const div = document.createElement("div");
+                div.style.background = `url(${colors[index]})`;
+                div.style.width = "100%";
+                div.style.height = "100%";
+                foreignObject.appendChild(div);
+
+                elements[index].parentNode.insertBefore(foreignObject, elements[index]);
+                elements[index].remove();
+              }
+
+              const isFirst = index === 0;
+              const isLast = index === elements.length - 1;
+
+              return roundedRect({
+                x,
+                y: 0,
+                w,
+                h: barHeight,
+                r: 8,
+                tl: isFirst,
+                bl: isFirst,
+                tr: isLast,
+                br: isLast,
+              });
+            });
+        }
       }
     },
     [props.data],

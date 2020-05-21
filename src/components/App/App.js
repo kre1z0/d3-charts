@@ -5,6 +5,7 @@ import {
   lineChartRandomData,
   stackedBarChartRandomData,
   horizontalBarChartRandomData,
+  percentBarChartRandomData,
 } from "helpers/development/random";
 import { GlobalStyle } from "styles";
 import { LineChart } from "components/LineChart/LineChart";
@@ -17,6 +18,7 @@ export const App = hot(() => {
   const [lineChartData, onLineChartRandom] = useState(lineChartRandomData());
   const [stackedBarChartData, onStackedBarChartRandom] = useState(stackedBarChartRandomData());
   const [horizontalBarChartData, onHorizontalBarChartRandom] = useState(horizontalBarChartRandomData());
+  const [percentBarChartData, onPercentBarChartRandom] = useState(percentBarChartRandomData());
 
   return (
     <>
@@ -27,18 +29,17 @@ export const App = hot(() => {
         <br />
         <LineChart data={lineChartData} />
       </Item>
-
+      <Item>
+        <button onClick={() => onPercentBarChartRandom(percentBarChartRandomData())}>Randomize data</button>
+        <br />
+        <br />
+        <PercentBarChart data={percentBarChartData} />
+      </Item>
       <Item>
         <button onClick={() => onStackedBarChartRandom(stackedBarChartRandomData())}>Randomize data</button>
         <br />
         <br />
         <StackedBarChart data={stackedBarChartData} />
-      </Item>
-      <Item>
-        <button>Randomize data</button>
-        <br />
-        <br />
-        <PercentBarChart />
       </Item>
       <Item>
         <button onClick={() => onHorizontalBarChartRandom(horizontalBarChartRandomData())}>Randomize data</button>

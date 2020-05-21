@@ -7,3 +7,7 @@ export function stackMin(serie) {
 export function stackMax(serie) {
   return d3.max(serie, (d) => d[1]);
 }
+
+export function getWidthByPercent(width, percent) {
+  return ((width) * percent) / 100;
+}

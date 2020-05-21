@@ -10,10 +10,6 @@ export const Container = styled.div.attrs(({ width, height }) => ({
     stroke: #c6c6c6;
   }
 
-  path {
-    fill: none;
-  }
-
   .dot {
     fill: transparent;
   }
