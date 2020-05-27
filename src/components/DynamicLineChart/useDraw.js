@@ -9,7 +9,7 @@ export function useDraw(props) {
         const data = Array.isArray(props.data[0]) ? props.data : [props.data];
         const width = Math.min(props.width, node.getBoundingClientRect().width);
         const ticksStrokeWith = 1;
-        const linesStrokeWith = 2;
+        const linesStrokeWith = 1;
         const xScaleHeight = 20;
         const margin = { bottom: 20, top: 20, left: 20, right: 40 };
 
@@ -31,7 +31,14 @@ export function useDraw(props) {
         svg
           .append("g")
           .attr("class", "y axis")
-          .call(d3.axisLeft(yScale).ticks(6))
+          .attr("font-weight", "bold")
+          .attr("color", "#fff")
+          .call(
+            d3
+              .axisLeft(yScale)
+              .ticks(6)
+              .tickFormat((tick) => `${tick}₽`),
+          )
           .call((g) => {
             const texts = g.selectAll(".tick text").nodes();
             for (let i = 0; i < texts.length; i++) {
@@ -40,6 +47,7 @@ export function useDraw(props) {
 
             g.select(".domain").remove();
             g.selectAll("line")
+              .attr("stroke", "#3b4852")
               .attr("x1", margin.left + yScaleWidth)
               .attr("stroke-width", ticksStrokeWith)
               .attr("x2", width - margin.right)
@@ -57,6 +65,7 @@ export function useDraw(props) {
         svg
           .append("g")
           .call(d3.axisBottom(xScale).tickFormat((i) => labels[i]))
+          .attr("color", "#c6c6c6")
           .call((g) => {
             g.attr("transform", `translate(${0}, ${yScaleXRange})`);
             g.select(".domain").remove();
@@ -81,7 +90,8 @@ export function useDraw(props) {
             .append("path")
             .datum(dataset)
             .attr("d", line)
-            .attr("stroke", colors[i])
+            .attr("fill", "none")
+            .attr("stroke", colors[i] || colors[0])
             .attr("stroke-width", linesStrokeWith);
         }
       }
