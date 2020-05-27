@@ -1,17 +1,26 @@
 import * as d3 from "d3";
+import ru from "date-fns/locale/ru";
 import { useCallback } from "react";
+
+export const getShortMonts = () =>
+  Array.from({ length: 12 }, (_, monthIndex) => {
+    const str = ru.localize.month(monthIndex, { width: "abbreviated" }).substring(0, 3);
+
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  });
 
 export function useDraw(props) {
   const ref = useCallback(
     (node) => {
       if (node !== null) {
-        const { height, labels, colors } = props;
-        const data = Array.isArray(props.data[0]) ? props.data : [props.data];
+        const { height, data, colors } = props;
         const width = Math.min(props.width, node.getBoundingClientRect().width);
         const ticksStrokeWith = 1;
         const linesStrokeWith = 1;
         const xScaleHeight = 20;
         const margin = { bottom: 20, top: 20, left: 20, right: 40 };
+        const count = data.reduce((acc, { values }) => Math.max(acc, values.length), 0);
+        const months = getShortMonts();
 
         /** SVG **/
         d3.select(node).select("svg").remove();
@@ -22,7 +31,7 @@ export function useDraw(props) {
         /** Y - axis **/
         const yScale = d3
           .scaleLinear()
-          .domain(d3.extent(data.reduce((m, d) => m.concat(d.map((n) => n * 1.24)), [])))
+          .domain(d3.extent(data.reduce((acc, { values }) => acc.concat(values.map(({ value }) => value)), [])))
           .range([yScaleXRange, margin.top]);
 
         let yScaleWidth = 0;
@@ -59,22 +68,30 @@ export function useDraw(props) {
         /** X - axis **/
         const xScale = d3
           .scaleLinear()
-          .domain([0, labels.length - 1])
+          .domain([0, count - 1])
           .range([margin.left + yScaleWidth, Math.round(width - margin.right)]);
 
         svg
           .append("g")
-          .call(d3.axisBottom(xScale).tickFormat((i) => labels[i]))
+          .call(
+            d3
+              .axisBottom(xScale)
+              .ticks(24)
+              .tickFormat((i) => {
+                const date = data[0].values[i].date;
+                return months[date.getMonth()];
+              }),
+          )
           .attr("color", "#c6c6c6")
           .call((g) => {
-            g.attr("transform", `translate(${0}, ${yScaleXRange})`);
+            g.attr("transform", `translate(${0}, ${yScaleXRange + 10})`);
             g.select(".domain").remove();
             g.selectAll("line").remove();
           });
 
         for (let i = 0; i < data.length; i++) {
           /** Dataset **/
-          const dataset = d3.range(data[i].length).map((n) => ({ y: data[i][n] }));
+          const dataset = d3.range(data[i].values.length).map((n) => ({ y: data[i].values[n].value }));
           /** Path **/
           const line = d3
             .line()
