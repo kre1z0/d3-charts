@@ -22,7 +22,7 @@ const formatDate = (date) => format(date, "d-Y-M");
 export const App = hot(() => {
   const start = new Date(2019, 11, 4);
   const end = new Date(2020, 11, 14);
-  const [linesCount, onSetLinesCount] = useState(2);
+  const [linesCount, onSetLinesCount] = useState(10);
 
   const randomDynamicalData = getDynamicLineChartData({ linesCount, start, end });
   const [dynamicLineChartData, onDynamicLineChartRandom] = useState(
