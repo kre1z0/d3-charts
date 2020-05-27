@@ -78,7 +78,7 @@ module.exports = {
       },
     }),
     new HTMLPlugin({
-      title: "react",
+      title: "d3 charts",
       config: "{{config|safe}}",
       template,
       minify: true,
