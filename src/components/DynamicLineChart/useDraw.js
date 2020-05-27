@@ -12,8 +12,9 @@ export const getShortMonts = () =>
 export function useDraw(props) {
   const ref = useCallback(
     (node) => {
-      if (node !== null) {
+      if (node !== null && Array.isArray(props.data) && props.data.length) {
         const { height, data, colors } = props;
+
         const width = Math.min(props.width, node.getBoundingClientRect().width);
         const ticksStrokeWith = 1;
         const linesStrokeWith = 1;
