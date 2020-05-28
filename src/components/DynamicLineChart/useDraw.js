@@ -1,10 +1,14 @@
 import * as d3 from "d3";
+import { event as currentEvent } from "d3";
 import ru from "date-fns/locale/ru";
 import eachMonthOfInterval from "date-fns/eachMonthOfInterval";
 import isFirstDayOfMonth from "date-fns/isFirstDayOfMonth";
 import differenceInDays from "date-fns/differenceInDays";
 import closestTo from "date-fns/closestTo";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
+
+import { getPosition, rateLimit } from "./helpers";
+import { chartContainer } from "./styled";
 
 export const getShortMonts = () =>
   Array.from({ length: 12 }, (_, monthIndex) => {
@@ -14,9 +18,15 @@ export const getShortMonts = () =>
   });
 
 export function useDraw(props) {
+  const dragStartX = useRef(0);
+  const dragEndX = useRef(0);
+  const dragPositionX = useRef(null);
+  const currentX = useRef(0);
+
   const ref = useCallback(
     (node) => {
       if (node !== null && Array.isArray(props.data) && props.data.length) {
+        console.info("--> ggwp 4444 render");
         const { height, data, colors, start, end } = props;
         const dayWidthPx = 4;
 
@@ -42,6 +52,7 @@ export function useDraw(props) {
         const xLabelMinWidth = 30;
 
         /** SVG **/
+        const body = d3.select("body");
         d3.select(node).select("svg").remove();
         const svg = d3.select(node).append("svg").attr("viewBox", `0 0 ${width} ${height}`);
 
@@ -56,9 +67,8 @@ export function useDraw(props) {
         let yScaleWidth = 0;
         const yScalePadding = 15;
 
-        svg
+        const yAxis = svg
           .append("g")
-          .attr("class", "y axis")
           .attr("font-weight", "bold")
           .attr("color", "#fff")
           .call(
@@ -91,14 +101,14 @@ export function useDraw(props) {
 
         const paddings = width - margin.left - margin.right - yScaleWidth;
         const defaultTranslate = (itemMaxLength.values.length - 1) * dayWidthPx;
-        const transformX = defaultTranslate - paddings;
-        const chart = svg.append("g").attr("transform", `translate(-${transformX}, 0)`);
+        const transformX = Math.ceil(defaultTranslate - paddings);
+        const chart = svg.append("g").attr("class", chartContainer).attr("transform", `translate(-${transformX}, 0)`);
 
+        const xAxisPosition = yScaleXRange + yScalePadding;
         const xAxis = svg
           .append("g")
-          .attr("class", "xAxis")
           .attr("color", "#c6c6c6")
-          .attr("transform", `translate(-${transformX}, ${yScaleXRange + yScalePadding})`)
+          .attr("transform", `translate(-${transformX}, ${xAxisPosition})`)
           .attr("text-anchor", "middle")
           .attr("font-size", 10)
           .attr("font-family", "sans-serif");
@@ -132,11 +142,7 @@ export function useDraw(props) {
             .y((d) => yScale(d.y) + ticksStrokeWith)
             .curve(d3.curveMonotoneX);
 
-          const globalClass = `line-${i}`;
-
           chart
-            .append("g")
-            .attr("class", globalClass)
             .append("path")
             .datum(dataset)
             .attr("d", line)
@@ -144,6 +150,66 @@ export function useDraw(props) {
             .attr("stroke", colors[i] || colors[0])
             .attr("stroke-width", linesStrokeWith);
         }
+
+        const rect = yAxis
+          .append("rect")
+          .attr("height", height)
+          .attr("width", width)
+          .attr("x", 0)
+          .attr("y", 0)
+          .style("cursor", "grab")
+          .attr("fill", "green");
+
+        const onMove = (event) => {
+          const { x } = getPosition(event);
+
+          const currX = dragPositionX.current - (x - dragStartX.current);
+          const transX = Math.max(Math.min(currX, transformX), 0);
+
+          if (dragEndX.current !== transX) {
+            xAxis.attr("transform", `translate(-${transX}, ${xAxisPosition})`);
+            chart.attr("transform", `translate(-${transX}, 0)`);
+            dragEndX.current = transX;
+          }
+
+          const right = currentX.current > x;
+          const left = currentX.current < x;
+
+          const outOfTheArea = (currX > transformX && right) || (currX < 0 && left);
+
+          if (outOfTheArea) {
+            // dragStartX.current = x;
+            console.info("--> ggwp 4444 OUT", x);
+          }
+
+          currentX.current = x;
+        };
+
+        const onEnd = () => {
+          body.style("cursor", null);
+          rect.style("cursor", "grab");
+          dragStartX.current = 0;
+          dragPositionX.current = dragEndX.current;
+          currentX.current = 0;
+          document.removeEventListener("mousemove", onMove);
+        };
+
+        rect.on("mousedown touchstart", () => {
+          const { x } = getPosition(currentEvent);
+          dragStartX.current = x;
+
+          if (dragPositionX.current === null) {
+            dragPositionX.current = transformX;
+          }
+
+          body.style("cursor", "grabbing");
+          rect.style("cursor", null);
+
+          document.addEventListener("mousemove", onMove);
+        });
+
+        document.addEventListener("mouseup", onEnd);
+        document.addEventListener("touchend", onEnd);
       }
     },
     [props.data],
