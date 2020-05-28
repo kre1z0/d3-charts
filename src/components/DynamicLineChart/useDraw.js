@@ -1,5 +1,9 @@
 import * as d3 from "d3";
 import ru from "date-fns/locale/ru";
+import eachMonthOfInterval from "date-fns/eachMonthOfInterval";
+import isFirstDayOfMonth from "date-fns/isFirstDayOfMonth";
+import differenceInDays from "date-fns/differenceInDays";
+import closestTo from "date-fns/closestTo";
 import { useCallback } from "react";
 
 export const getShortMonts = () =>
@@ -13,15 +17,29 @@ export function useDraw(props) {
   const ref = useCallback(
     (node) => {
       if (node !== null && Array.isArray(props.data) && props.data.length) {
-        const { height, data, colors } = props;
+        const { height, data, colors, start, end } = props;
+        const dayWidthPx = 4;
+
+        const months = eachMonthOfInterval({ start, end });
+        const indexMaxCount = data.reduce((acc, { values }, index) => (acc > values.length ? acc : index), 0);
+        const itemMaxLength = data[indexMaxCount];
+        const dates = itemMaxLength.values.map(({ date }) => date);
+
+        const vertexIndices = (+end !== +months[months.length - 1] ? [...months, end] : months).map(
+          (month, i, array) => {
+            const closestDate = i !== array.length - 1 ? closestTo(month, dates) : end;
+            const index = itemMaxLength.values.findIndex(({ date }) => +date === +closestDate);
+            return index;
+          },
+        );
 
         const width = Math.min(props.width, node.getBoundingClientRect().width);
         const ticksStrokeWith = 1;
         const linesStrokeWith = 1;
         const xScaleHeight = 20;
         const margin = { bottom: 20, top: 20, left: 20, right: 40 };
-        const count = data.reduce((acc, { values }) => Math.max(acc, values.length), 0);
-        const months = getShortMonts();
+        const shortMonths = getShortMonts();
+        const xLabelMinWidth = 30;
 
         /** SVG **/
         d3.select(node).select("svg").remove();
@@ -46,7 +64,7 @@ export function useDraw(props) {
           .call(
             d3
               .axisLeft(yScale)
-              .ticks(6)
+              .ticks(4)
               .tickFormat((tick) => `${tick}₽`),
           )
           .call((g) => {
@@ -66,39 +84,48 @@ export function useDraw(props) {
             g.selectAll("text").attr("transform", `translate(${margin.left + yScaleWidth}, 0)`);
           });
 
-        /** X - axis **/
-        const xScale = d3
-          .scaleLinear()
-          .domain([0, count - 1])
-          .range([margin.left + yScaleWidth, Math.round(width - margin.right)]);
+        const getX = (index) => {
+          const left = margin.left + yScaleWidth;
+          return index > 0 ? vertexIndices[index] * dayWidthPx + left : left;
+        };
 
-        svg
+        const xAxis = svg
           .append("g")
-          .call(
-            d3
-              .axisBottom(xScale)
-              .ticks(24)
-              .tickFormat((i) => {
-                const date = data[0].values[i].date;
-                return months[date.getMonth()];
-              }),
-          )
+          .attr("class", "xAxis")
           .attr("color", "#c6c6c6")
-          .call((g) => {
-            g.attr("transform", `translate(${0}, ${yScaleXRange + 10})`);
-            g.select(".domain").remove();
-            g.selectAll("line").remove();
-          });
+          .attr("transform", `translate(${0}, ${yScaleXRange + 15})`)
+          .attr("text-anchor", "middle")
+          .attr("font-size", 10)
+          .attr("font-family", "sans-serif");
+
+        for (let i = 0; i < vertexIndices.length; i++) {
+          const skipLabel = i === 0 && vertexIndices[i + 1] * dayWidthPx < xLabelMinWidth;
+
+          if (months[i] && !skipLabel) {
+            const monthShort = shortMonths[months[i].getMonth()];
+            xAxis
+              .append("g")
+              .attr("transform", `translate(${getX(i)}, 0)`)
+              .append("text")
+              .attr("fill", "currentColor")
+              .text(monthShort);
+          }
+        }
 
         for (let i = 0; i < data.length; i++) {
           /** Dataset **/
-          const dataset = d3.range(data[i].values.length).map((n) => ({ y: data[i].values[n].value }));
+          const item = data[i];
+
+          const dataset = d3.range(vertexIndices.length).map((n) => {
+            return { y: item.values[vertexIndices[n]].value };
+          });
+
           /** Path **/
           const line = d3
             .line()
-            .x((d, i) => xScale(i))
-            .y((d) => yScale(d.y) + ticksStrokeWith)
-            .curve(d3.curveMonotoneX);
+            .x((d, i) => getX(i))
+            .y((d) => yScale(d.y) + ticksStrokeWith);
+          // .curve(d3.curveMonotoneX);
 
           const globalClass = `line-${i}`;
 
