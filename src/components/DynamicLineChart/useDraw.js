@@ -140,6 +140,7 @@ export function useDraw(props) {
         const onStart = () => {
           const { x } = getPosition(currentEvent);
           dragStartX.current = x;
+          chart.attr("class", null);
 
           if (dragPositionX.current === null) {
             dragPositionX.current = transformX;
@@ -192,6 +193,7 @@ export function useDraw(props) {
         };
 
         const onEnd = () => {
+          chart.attr("class", chartContainer);
           body.style("cursor", null);
           rect.style("cursor", "grab");
           dragStartX.current = 0;
