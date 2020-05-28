@@ -180,6 +180,8 @@ export function useDraw(props) {
         const onMove = (event) => {
           const { x } = getPosition(event);
 
+          const left = currentX.current < x;
+          const right = currentX.current > x;
           const currX = dragPositionX.current - (x - dragStartX.current);
           const transX = Math.max(Math.min(currX, transformX), 0);
 
@@ -187,6 +189,16 @@ export function useDraw(props) {
             xAxis.attr("transform", `translate(-${transX}, ${xAxisPosition})`);
             chart.attr("transform", `translate(-${transX}, 0)`);
             dragEndX.current = transX;
+          }
+
+          const restartR = currX > transformX && left && currentX.current !== 0;
+
+          const restartL = currX < 0 && right && currentX.current !== 0;
+
+          if (restartR) {
+            dragStartX.current = x;
+          } else if (restartL) {
+            dragStartX.current = x;
           }
 
           currentX.current = x;
