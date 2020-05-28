@@ -4,7 +4,7 @@ import eachMonthOfInterval from "date-fns/eachMonthOfInterval";
 import closestTo from "date-fns/closestTo";
 import { useCallback, useRef, useEffect } from "react";
 
-import { getPosition } from "./helpers";
+import { getPosition, detectMob } from "./helpers";
 import { chartContainer } from "./styled";
 
 export const getShortMonts = () =>
@@ -29,6 +29,7 @@ export function useDraw(props) {
       if (node !== null && Array.isArray(props.data) && props.data.length) {
         const { height, data, colors, start, end } = props;
         const dayWidthPx = 4;
+        const isMobile = detectMob();
 
         const months = eachMonthOfInterval({ start, end });
         const indexMaxCount = data.reduce((acc, { values }, index) => (acc > values.length ? acc : index), 0);
@@ -146,6 +147,10 @@ export function useDraw(props) {
           }
 
           body.style("cursor", "grabbing");
+          if (isMobile) {
+            body.style("overflow", "hidden");
+          }
+
           rect.style("cursor", null);
 
           document.addEventListener("mousemove", onMove);
@@ -207,6 +212,11 @@ export function useDraw(props) {
         const onEnd = () => {
           chart.attr("class", chartContainer);
           body.style("cursor", null);
+
+          if (isMobile) {
+            body.style("overflow", null);
+          }
+
           rect.style("cursor", "grab");
           dragStartX.current = 0;
           dragPositionX.current = dragEndX.current;
