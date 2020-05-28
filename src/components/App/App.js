@@ -20,9 +20,9 @@ import { Item, PaddingX, NumberInput } from "components/App/styled";
 const formatDate = (date) => format(date, "d-Y-M");
 
 export const App = hot(() => {
-  const start = new Date(2019, 11, 28);
-  const end = new Date(2020, 2, 14);
-  const [linesCount, onSetLinesCount] = useState(1);
+  const start = new Date(2018, 11, 1);
+  const end = new Date(2020, 10, 14);
+  const [linesCount, onSetLinesCount] = useState(10);
 
   const randomDynamicalData = getDynamicLineChartData({ linesCount, start, end });
   const [dynamicLineChartData, onDynamicLineChartRandom] = useState(
@@ -57,24 +57,24 @@ export const App = hot(() => {
         <br />
         <LineChart data={lineChartData} />
       </Item>
-      {/*<Item>*/}
-      {/*  <button onClick={() => onPercentBarChartRandom(percentBarChartRandomData())}>Randomize data</button>*/}
-      {/*  <br />*/}
-      {/*  <br />*/}
-      {/*  <PercentBarChart data={percentBarChartData} />*/}
-      {/*</Item>*/}
-      {/*<Item>*/}
-      {/*  <button onClick={() => onStackedBarChartRandom(stackedBarChartRandomData())}>Randomize data</button>*/}
-      {/*  <br />*/}
-      {/*  <br />*/}
-      {/*  <StackedBarChart data={stackedBarChartData} />*/}
-      {/*</Item>*/}
-      {/*<Item>*/}
-      {/*  <button onClick={() => onHorizontalBarChartRandom(horizontalBarChartRandomData())}>Randomize data</button>*/}
-      {/*  <br />*/}
-      {/*  <br />*/}
-      {/*  <HorizontalBarChart data={horizontalBarChartData} />*/}
-      {/*</Item>*/}
+      <Item>
+        <button onClick={() => onPercentBarChartRandom(percentBarChartRandomData())}>Randomize data</button>
+        <br />
+        <br />
+        <PercentBarChart data={percentBarChartData} />
+      </Item>
+      <Item>
+        <button onClick={() => onStackedBarChartRandom(stackedBarChartRandomData())}>Randomize data</button>
+        <br />
+        <br />
+        <StackedBarChart data={stackedBarChartData} />
+      </Item>
+      <Item>
+        <button onClick={() => onHorizontalBarChartRandom(horizontalBarChartRandomData())}>Randomize data</button>
+        <br />
+        <br />
+        <HorizontalBarChart data={horizontalBarChartData} />
+      </Item>
     </>
   );
 });

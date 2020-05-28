@@ -89,11 +89,16 @@ export function useDraw(props) {
           return index > 0 ? vertexIndices[index] * dayWidthPx + left : left;
         };
 
+        const paddings = width - margin.left - margin.right - yScaleWidth;
+        const defaultTranslate = (itemMaxLength.values.length - 1) * dayWidthPx;
+        const transformX = defaultTranslate - paddings;
+        const chart = svg.append("g").attr("transform", `translate(-${transformX}, 0)`);
+
         const xAxis = svg
           .append("g")
           .attr("class", "xAxis")
           .attr("color", "#c6c6c6")
-          .attr("transform", `translate(${0}, ${yScaleXRange + 15})`)
+          .attr("transform", `translate(-${transformX}, ${yScaleXRange + yScalePadding})`)
           .attr("text-anchor", "middle")
           .attr("font-size", 10)
           .attr("font-family", "sans-serif");
@@ -124,12 +129,12 @@ export function useDraw(props) {
           const line = d3
             .line()
             .x((d, i) => getX(i))
-            .y((d) => yScale(d.y) + ticksStrokeWith);
-          // .curve(d3.curveMonotoneX);
+            .y((d) => yScale(d.y) + ticksStrokeWith)
+            .curve(d3.curveMonotoneX);
 
           const globalClass = `line-${i}`;
 
-          svg
+          chart
             .append("g")
             .attr("class", globalClass)
             .append("path")
