@@ -2,12 +2,10 @@ import * as d3 from "d3";
 import { event as currentEvent } from "d3";
 import ru from "date-fns/locale/ru";
 import eachMonthOfInterval from "date-fns/eachMonthOfInterval";
-import isFirstDayOfMonth from "date-fns/isFirstDayOfMonth";
-import differenceInDays from "date-fns/differenceInDays";
 import closestTo from "date-fns/closestTo";
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useEffect } from "react";
 
-import { getPosition, rateLimit } from "./helpers";
+import { getPosition } from "./helpers";
 import { chartContainer } from "./styled";
 
 export const getShortMonts = () =>
@@ -23,10 +21,13 @@ export function useDraw(props) {
   const dragPositionX = useRef(null);
   const currentX = useRef(0);
 
+  useEffect(() => {
+    dragPositionX.current = null;
+  }, [props.data]);
+
   const ref = useCallback(
     (node) => {
       if (node !== null && Array.isArray(props.data) && props.data.length) {
-        console.info("--> ggwp 4444 render");
         const { height, data, colors, start, end } = props;
         const dayWidthPx = 4;
 
@@ -127,6 +128,29 @@ export function useDraw(props) {
           }
         }
 
+        const rect = yAxis
+          .append("rect")
+          .attr("height", height)
+          .attr("width", width)
+          .attr("x", 0)
+          .attr("y", 0)
+          .style("cursor", "grab")
+          .attr("fill", "rgba(0, 0, 0, 0)");
+
+        const onStart = () => {
+          const { x } = getPosition(currentEvent);
+          dragStartX.current = x;
+
+          if (dragPositionX.current === null) {
+            dragPositionX.current = transformX;
+          }
+
+          body.style("cursor", "grabbing");
+          rect.style("cursor", null);
+
+          document.addEventListener("mousemove", onMove);
+        };
+
         for (let i = 0; i < data.length; i++) {
           /** Dataset **/
           const item = data[i];
@@ -148,17 +172,9 @@ export function useDraw(props) {
             .attr("d", line)
             .attr("fill", "none")
             .attr("stroke", colors[i] || colors[0])
-            .attr("stroke-width", linesStrokeWith);
+            .attr("stroke-width", linesStrokeWith)
+            .on("mousedown touchstart", onStart);
         }
-
-        const rect = yAxis
-          .append("rect")
-          .attr("height", height)
-          .attr("width", width)
-          .attr("x", 0)
-          .attr("y", 0)
-          .style("cursor", "grab")
-          .attr("fill", "green");
 
         const onMove = (event) => {
           const { x } = getPosition(event);
@@ -170,16 +186,6 @@ export function useDraw(props) {
             xAxis.attr("transform", `translate(-${transX}, ${xAxisPosition})`);
             chart.attr("transform", `translate(-${transX}, 0)`);
             dragEndX.current = transX;
-          }
-
-          const right = currentX.current > x;
-          const left = currentX.current < x;
-
-          const outOfTheArea = (currX > transformX && right) || (currX < 0 && left);
-
-          if (outOfTheArea) {
-            // dragStartX.current = x;
-            console.info("--> ggwp 4444 OUT", x);
           }
 
           currentX.current = x;
@@ -194,19 +200,7 @@ export function useDraw(props) {
           document.removeEventListener("mousemove", onMove);
         };
 
-        rect.on("mousedown touchstart", () => {
-          const { x } = getPosition(currentEvent);
-          dragStartX.current = x;
-
-          if (dragPositionX.current === null) {
-            dragPositionX.current = transformX;
-          }
-
-          body.style("cursor", "grabbing");
-          rect.style("cursor", null);
-
-          document.addEventListener("mousemove", onMove);
-        });
+        rect.on("mousedown touchstart", onStart);
 
         document.addEventListener("mouseup", onEnd);
         document.addEventListener("touchend", onEnd);
