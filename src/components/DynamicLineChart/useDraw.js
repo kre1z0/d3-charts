@@ -1,5 +1,4 @@
 import * as d3 from "d3";
-import { event as currentEvent } from "d3";
 import ru from "date-fns/locale/ru";
 import eachMonthOfInterval from "date-fns/eachMonthOfInterval";
 import closestTo from "date-fns/closestTo";
@@ -138,7 +137,7 @@ export function useDraw(props) {
           .attr("fill", "rgba(0, 0, 0, 0)");
 
         const onStart = () => {
-          const { x } = getPosition(currentEvent);
+          const { x } = getPosition(d3.event);
           dragStartX.current = x;
           chart.attr("class", null);
 
@@ -150,6 +149,7 @@ export function useDraw(props) {
           rect.style("cursor", null);
 
           document.addEventListener("mousemove", onMove);
+          document.addEventListener("touchmove", onMove);
         };
 
         for (let i = 0; i < data.length; i++) {
@@ -212,6 +212,7 @@ export function useDraw(props) {
           dragPositionX.current = dragEndX.current;
           currentX.current = 0;
           document.removeEventListener("mousemove", onMove);
+          document.removeEventListener("touchmove", onMove);
         };
 
         rect.on("mousedown touchstart", onStart);
