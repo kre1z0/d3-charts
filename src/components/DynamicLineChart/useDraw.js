@@ -4,7 +4,7 @@ import eachMonthOfInterval from "date-fns/eachMonthOfInterval";
 import closestTo from "date-fns/closestTo";
 import { useCallback, useRef, useEffect, useState } from "react";
 
-import { getPosition, detectMob, useThrottle } from "./helpers";
+import { getPosition, detectMob, useThrottle, animate } from "./helpers";
 import { chartContainer } from "./styled";
 
 export const getShortMonts = () =>
@@ -21,9 +21,13 @@ export function useDraw(props) {
   const dragEndX = useRef(0);
   const dragPositionX = useRef(null);
   const currentX = useRef(0);
+  const timestamp = useRef(0);
+  const speed = useRef(0);
 
   useEffect(() => {
     dragPositionX.current = null;
+    currentX.current = 0;
+    dragEndX.current = 0;
   }, [props.data]);
 
   const throttledResize = useThrottle(forceUpdate, 40);
@@ -36,7 +40,6 @@ export function useDraw(props) {
   const ref = useCallback(
     (node) => {
       if (node !== null && Array.isArray(props.data) && props.data.length) {
-        console.info("--> ggwp 4444 render");
         const { height, data, colors, start, end } = props;
         const dayWidthPx = 4;
         const isMobile = detectMob();
@@ -147,6 +150,81 @@ export function useDraw(props) {
           .style("cursor", "grab")
           .attr("fill", "rgba(0, 0, 0, 0)");
 
+        const onEnd = () => {
+          chart.attr("class", chartContainer);
+          body.style("cursor", null);
+
+          if (isMobile) {
+            body.style("overflow", null);
+          }
+
+          rect.style("cursor", "grab");
+          dragStartX.current = 0;
+          dragPositionX.current = dragEndX.current;
+          currentX.current = 0;
+          document.removeEventListener("mousemove", onMove);
+          document.removeEventListener("touchmove", onMove);
+          document.removeEventListener("mouseup", onEnd);
+          document.removeEventListener("touchend", onEnd);
+
+          animate({
+            duration: 200,
+            timing: linear,
+            draw: (progress) => {
+              const px = Math.round(speed.current * progress);
+              const currX = dragPositionX.current - px;
+              const transX = Math.max(Math.min(currX, transformX), 0);
+
+              if (dragEndX.current !== transX) {
+                xAxis.attr("transform", `translate(-${transX}, ${xAxisPosition})`);
+                chart.attr("transform", `translate(-${transX}, 0)`);
+              }
+
+              if (progress === 1) {
+                speed.current = 0;
+                timestamp.current = 0;
+                dragPositionX.current = transX;
+              }
+            },
+          });
+        };
+
+        const onMove = (event) => {
+          const { x } = getPosition(event);
+
+          const left = currentX.current < x;
+          const right = currentX.current > x;
+          const currX = dragPositionX.current - (x - dragStartX.current);
+          const transX = Math.max(Math.min(currX, transformX), 0);
+
+          if (dragEndX.current !== transX) {
+            xAxis.attr("transform", `translate(-${transX}, ${xAxisPosition})`);
+            chart.attr("transform", `translate(-${transX}, 0)`);
+            dragEndX.current = transX;
+          }
+
+          const restartR = currX > transformX && left && currentX.current !== 0;
+
+          const restartL = currX < 0 && right && currentX.current !== 0;
+
+          if (restartR) {
+            dragStartX.current = x;
+          } else if (restartL) {
+            dragStartX.current = x;
+          }
+
+          if (currentX.current) {
+            const now = Date.now();
+            const dt = now - timestamp.current;
+            const dx = x - currentX.current;
+            const speedX = Math.round((dx / dt) * 100);
+            speed.current = speedX;
+            timestamp.current = now;
+          }
+
+          currentX.current = x;
+        };
+
         const onStart = () => {
           const { x } = getPosition(d3.event);
           dragStartX.current = x;
@@ -165,6 +243,8 @@ export function useDraw(props) {
 
           document.addEventListener("mousemove", onMove);
           document.addEventListener("touchmove", onMove);
+          document.addEventListener("mouseup", onEnd);
+          document.addEventListener("touchend", onEnd);
         };
 
         for (let i = 0; i < data.length; i++) {
@@ -192,53 +272,15 @@ export function useDraw(props) {
             .on("mousedown touchstart", onStart);
         }
 
-        const onMove = (event) => {
-          const { x } = getPosition(event);
+        function easeInQuad(t) {
+          return t * t;
+        }
 
-          const left = currentX.current < x;
-          const right = currentX.current > x;
-          const currX = dragPositionX.current - (x - dragStartX.current);
-          const transX = Math.max(Math.min(currX, transformX), 0);
-
-          if (dragEndX.current !== transX) {
-            xAxis.attr("transform", `translate(-${transX}, ${xAxisPosition})`);
-            chart.attr("transform", `translate(-${transX}, 0)`);
-            dragEndX.current = transX;
-          }
-
-          const restartR = currX > transformX && left && currentX.current !== 0;
-
-          const restartL = currX < 0 && right && currentX.current !== 0;
-
-          if (restartR) {
-            dragStartX.current = x;
-          } else if (restartL) {
-            dragStartX.current = x;
-          }
-
-          currentX.current = x;
-        };
-
-        const onEnd = () => {
-          chart.attr("class", chartContainer);
-          body.style("cursor", null);
-
-          if (isMobile) {
-            body.style("overflow", null);
-          }
-
-          rect.style("cursor", "grab");
-          dragStartX.current = 0;
-          dragPositionX.current = dragEndX.current;
-          currentX.current = 0;
-          document.removeEventListener("mousemove", onMove);
-          document.removeEventListener("touchmove", onMove);
-        };
+        function linear(t) {
+          return t;
+        }
 
         rect.on("mousedown touchstart", onStart);
-
-        document.addEventListener("mouseup", onEnd);
-        document.addEventListener("touchend", onEnd);
       }
     },
     [props.data, innerWidth],
