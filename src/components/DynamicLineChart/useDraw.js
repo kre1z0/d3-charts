@@ -167,26 +167,31 @@ export function useDraw(props) {
           document.removeEventListener("mouseup", onEnd);
           document.removeEventListener("touchend", onEnd);
 
-          animate({
-            duration: 200,
-            timing: linear,
-            draw: (progress) => {
-              const px = Math.round(speed.current * progress);
-              const currX = dragPositionX.current - px;
-              const transX = Math.max(Math.min(currX, transformX), 0);
+          const dt = Date.now() - timestamp.current;
 
-              if (dragEndX.current !== transX) {
-                xAxis.attr("transform", `translate(-${transX}, ${xAxisPosition})`);
-                chart.attr("transform", `translate(-${transX}, 0)`);
-              }
+          if (dt < 44) {
+            console.info("--> ggwp 4444 ANIMATE");
+            animate({
+              duration: 400,
+              timing: (t) => t * (2 - t),
+              draw: (progress) => {
+                const px = Math.round(speed.current * 2 * progress);
+                const currX = dragPositionX.current - px;
+                const transX = Math.max(Math.min(currX, transformX), 0);
 
-              if (progress === 1) {
-                speed.current = 0;
-                timestamp.current = 0;
-                dragPositionX.current = transX;
-              }
-            },
-          });
+                if (dragEndX.current !== transX) {
+                  xAxis.attr("transform", `translate(-${transX}, ${xAxisPosition})`);
+                  chart.attr("transform", `translate(-${transX}, 0)`);
+                }
+
+                if (progress === 1) {
+                  speed.current = 0;
+                  timestamp.current = 0;
+                  dragPositionX.current = transX;
+                }
+              },
+            });
+          }
         };
 
         const onMove = (event) => {
@@ -270,14 +275,6 @@ export function useDraw(props) {
             .attr("stroke", colors[i] || colors[0])
             .attr("stroke-width", linesStrokeWith)
             .on("mousedown touchstart", onStart);
-        }
-
-        function easeInQuad(t) {
-          return t * t;
-        }
-
-        function linear(t) {
-          return t;
         }
 
         rect.on("mousedown touchstart", onStart);
