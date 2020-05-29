@@ -24,6 +24,8 @@ export function useDraw(props) {
   const timestamp = useRef(0);
   const speed = useRef(0);
   const animation = useRef(null);
+  const prevPath = useRef(null);
+  const hoverLine = useRef(null);
 
   useEffect(() => {
     cancelAnimationFrame(animation.current);
@@ -31,6 +33,8 @@ export function useDraw(props) {
     currentX.current = 0;
     dragEndX.current = 0;
     animation.current = null;
+    prevPath.current = null;
+    hoverLine.current = null;
   }, [props.data]);
 
   const throttledResize = useThrottle(forceUpdate, 40);
@@ -79,10 +83,13 @@ export function useDraw(props) {
         const yScale = d3
           .scaleLinear()
           .domain(d3.extent(data.reduce((acc, { values }) => acc.concat(values.map(({ value }) => value)), [])))
-          .range([yScaleXRange, margin.top]);
+          .range([yScaleXRange, margin.top])
+          .nice();
 
         let yScaleWidth = 0;
         const yScalePadding = 15;
+        let hoverLineY1 = 0;
+        let hoverLineY2 = 0;
 
         const yAxis = svg
           .append("g")
@@ -92,7 +99,16 @@ export function useDraw(props) {
             d3
               .axisLeft(yScale)
               .ticks(4)
-              .tickFormat((tick) => `${tick}₽`),
+              .tickFormat((tick, index, ticks) => {
+                if (index === 0) {
+                  hoverLineY1 = yScale(tick);
+                }
+                if (ticks.length - 1 === index) {
+                  hoverLineY2 = yScale(tick);
+                }
+
+                return `${tick}₽`;
+              }),
           )
           .call((g) => {
             const texts = g.selectAll(".tick text").nodes();
@@ -107,7 +123,6 @@ export function useDraw(props) {
               .attr("stroke-width", ticksStrokeWith)
               .attr("x2", width - margin.right)
               .attr("shape-rendering", "crispEdges");
-
             g.selectAll("text").attr("transform", `translate(${margin.left + yScaleWidth}, 0)`);
           });
 
@@ -285,7 +300,36 @@ export function useDraw(props) {
             .attr("fill", "none")
             .attr("stroke", colors[i] || colors[0])
             .attr("stroke-width", linesStrokeWith)
-            .on("mousedown touchstart", onStart);
+            .on("mousedown touchstart", onStart)
+            .on("click", () => {
+              const { target } = d3.event;
+              if (prevPath.current && prevPath.current !== target) {
+                prevPath.current.setAttribute("stroke", colors[i] || colors[0]);
+                prevPath.current.setAttribute("stroke-width", 1);
+              }
+
+              if (prevPath.current !== target) {
+                target.setAttribute("stroke", "#60c1dc");
+                target.setAttribute("stroke-width", 2);
+              }
+              prevPath.current = target;
+            })
+            .on("mouseover", () => {
+              const { x, y } = getPosition(d3.event);
+              const currX = dragPositionX.current === null ? transformX + x : dragPositionX.current + x;
+
+              if (hoverLine.current === null) {
+                hoverLine.current = chart
+                  .append("line")
+                  .attr("y1", hoverLineY1)
+                  .attr("y2", hoverLineY2)
+                  .style("pointer-events", "none")
+                  .attr("stroke", "#a5aead")
+                  .attr("shape-rendering", "crispEdges");
+              }
+
+              hoverLine.current.attr("x1", currX).attr("x2", currX);
+            });
         }
 
         rect.on("mousedown touchstart", onStart);
