@@ -2,9 +2,9 @@ import * as d3 from "d3";
 import ru from "date-fns/locale/ru";
 import eachMonthOfInterval from "date-fns/eachMonthOfInterval";
 import closestTo from "date-fns/closestTo";
-import { useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef, useEffect, useState } from "react";
 
-import { getPosition, detectMob } from "./helpers";
+import { getPosition, detectMob, useThrottle } from "./helpers";
 import { chartContainer } from "./styled";
 
 export const getShortMonts = () =>
@@ -15,6 +15,8 @@ export const getShortMonts = () =>
   });
 
 export function useDraw(props) {
+  const [innerWidth, updateState] = useState(window.innerWidth);
+  const forceUpdate = useCallback(() => updateState(window.innerWidth), []);
   const dragStartX = useRef(0);
   const dragEndX = useRef(0);
   const dragPositionX = useRef(null);
@@ -24,9 +26,17 @@ export function useDraw(props) {
     dragPositionX.current = null;
   }, [props.data]);
 
+  const throttledResize = useThrottle(forceUpdate, 40);
+
+  useEffect(() => {
+    window.addEventListener("resize", throttledResize);
+    return () => window.removeEventListener("resize", throttledResize);
+  }, []);
+
   const ref = useCallback(
     (node) => {
       if (node !== null && Array.isArray(props.data) && props.data.length) {
+        console.info("--> ggwp 4444 render");
         const { height, data, colors, start, end } = props;
         const dayWidthPx = 4;
         const isMobile = detectMob();
@@ -44,7 +54,7 @@ export function useDraw(props) {
           },
         );
 
-        const width = Math.min(props.width, node.getBoundingClientRect().width);
+        const width = Math.min(innerWidth, node.getBoundingClientRect().width);
         const ticksStrokeWith = 1;
         const linesStrokeWith = 1;
         const xScaleHeight = 20;
@@ -231,7 +241,7 @@ export function useDraw(props) {
         document.addEventListener("touchend", onEnd);
       }
     },
-    [props.data],
+    [props.data, innerWidth],
   );
   return [ref];
 }

@@ -1,3 +1,5 @@
+import { useRef, useEffect, useCallback } from "react";
+
 function isTouchEvent(event) {
   return !!event.touches;
 }
@@ -17,4 +19,37 @@ export function detectMob() {
   return toMatch.some((toMatchItem) => {
     return navigator.userAgent.match(toMatchItem);
   });
+}
+
+function throttle(func, limit) {
+  let lastFunc;
+  let lastRan;
+  return function () {
+    const context = this;
+    const args = arguments;
+    if (!lastRan) {
+      func.apply(context, args);
+      lastRan = Date.now();
+    } else {
+      clearTimeout(lastFunc);
+      lastFunc = setTimeout(() => {
+        if (Date.now() - lastRan >= limit) {
+          func.apply(context, args);
+          lastRan = Date.now();
+        }
+      }, limit - (Date.now() - lastRan));
+    }
+  };
+}
+
+export function useThrottle(cb, delay) {
+  const cbRef = useRef(cb);
+  useEffect(() => {
+    cbRef.current = cb;
+  });
+  return useCallback(
+    // useDebounce is the same except we use debounceImpl here
+    throttle((...args) => cbRef.current(...args), delay),
+    [delay],
+  );
 }

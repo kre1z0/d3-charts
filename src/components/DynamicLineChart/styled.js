@@ -2,9 +2,8 @@ import styled from "styled-components";
 
 export const chartContainer = "chart-container";
 
-export const Container = styled.div.attrs(({ width, height }) => ({
+export const Container = styled.div.attrs(({ height }) => ({
   style: {
-    maxWidth: width,
     height,
   },
 }))`

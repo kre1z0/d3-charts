@@ -7,7 +7,7 @@ export const DynamicLineChart = (props) => {
   const { width, height } = props;
   const [ref] = useDraw(props);
 
-  return <Container ref={ref} width={width} height={height} />;
+  return <Container ref={ref} height={height} />;
 };
 
 DynamicLineChart.defaultProps = {
