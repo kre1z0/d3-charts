@@ -26,6 +26,7 @@ export function useDraw(props) {
   const animation = useRef(null);
 
   useEffect(() => {
+    cancelAnimationFrame(animation.current);
     dragPositionX.current = null;
     currentX.current = 0;
     dragEndX.current = 0;
@@ -184,6 +185,7 @@ export function useDraw(props) {
                 if (dragEndX.current !== transX) {
                   xAxis.attr("transform", `translate(-${transX}, ${xAxisPosition})`);
                   chart.attr("transform", `translate(-${transX}, 0)`);
+                  dragEndX.current = transX;
                 }
 
                 if (progress === 1) {
@@ -233,7 +235,12 @@ export function useDraw(props) {
         };
 
         const onStart = () => {
-          cancelAnimationFrame(animation.current);
+          if (animation.current) {
+            speed.current = 0;
+            timestamp.current = 0;
+            cancelAnimationFrame(animation.current);
+            dragPositionX.current = dragEndX.current;
+          }
 
           const { x } = getPosition(d3.event);
           dragStartX.current = x;
