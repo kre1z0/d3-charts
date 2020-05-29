@@ -23,11 +23,13 @@ export function useDraw(props) {
   const currentX = useRef(0);
   const timestamp = useRef(0);
   const speed = useRef(0);
+  const animation = useRef(null);
 
   useEffect(() => {
     dragPositionX.current = null;
     currentX.current = 0;
     dragEndX.current = 0;
+    animation.current = null;
   }, [props.data]);
 
   const throttledResize = useThrottle(forceUpdate, 40);
@@ -170,11 +172,11 @@ export function useDraw(props) {
           const dt = Date.now() - timestamp.current;
 
           if (dt < 44) {
-            console.info("--> ggwp 4444 ANIMATE");
             animate({
-              duration: 400,
+              duration: 2000,
               timing: (t) => t * (2 - t),
-              draw: (progress) => {
+              draw: (progress, requestId) => {
+                animation.current = requestId;
                 const px = Math.round(speed.current * 2 * progress);
                 const currX = dragPositionX.current - px;
                 const transX = Math.max(Math.min(currX, transformX), 0);
@@ -231,6 +233,8 @@ export function useDraw(props) {
         };
 
         const onStart = () => {
+          cancelAnimationFrame(animation.current);
+
           const { x } = getPosition(d3.event);
           dragStartX.current = x;
           chart.attr("class", null);
