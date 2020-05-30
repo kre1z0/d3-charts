@@ -1,18 +1,10 @@
 import * as d3 from "d3";
-import ru from "date-fns/locale/ru";
 import eachMonthOfInterval from "date-fns/eachMonthOfInterval";
 import closestTo from "date-fns/closestTo";
 import { useCallback, useRef, useEffect, useState } from "react";
 
-import { getPosition, detectMob, useThrottle, animate, easeOutQuad } from "./helpers";
-import { chartContainer, chartTooltip } from "./styled";
-
-export const getShortMonts = () =>
-  Array.from({ length: 12 }, (_, monthIndex) => {
-    const str = ru.localize.month(monthIndex, { width: "abbreviated" }).substring(0, 3);
-
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  });
+import { getPosition, detectMob, useThrottle, animate, easeOutQuad, getShortMonts } from "./helpers";
+import { chartContainer, chartTooltip, chartTooltipYtrasnform } from "./styled";
 
 export function useDraw(props) {
   const [innerWidth, updateState] = useState(window.innerWidth);
@@ -47,8 +39,10 @@ export function useDraw(props) {
   const ref = useCallback(
     (node) => {
       if (node !== null && Array.isArray(props.data) && props.data.length) {
-        const { height, data, colors, start, end } = props;
+        const { height, data, colors, start, end, prefix } = props;
         const dayWidthPx = 4;
+        const tooltipHeight = 20;
+        const tooltipMargin = 5;
         const isMobile = detectMob();
 
         const months = eachMonthOfInterval({ start, end });
@@ -98,7 +92,7 @@ export function useDraw(props) {
           .call(
             d3
               .axisLeft(yScale)
-              .ticks(4)
+              .ticks(6)
               .tickFormat((tick, index, ticks) => {
                 if (index === 0) {
                   hoverLineY1 = yScale(tick);
@@ -107,7 +101,7 @@ export function useDraw(props) {
                   hoverLineY2 = yScale(tick);
                 }
 
-                return `${tick}₽`;
+                return `${tick}${prefix}`;
               }),
           )
           .call((g) => {
@@ -319,18 +313,61 @@ export function useDraw(props) {
               const currX = dragPositionX.current === null ? transformX + x : dragPositionX.current + x;
 
               if (tooltip.current === null) {
-                tooltip.current = chart.append("g").attr("class", chartTooltip);
+                tooltip.current = chart
+                  .append("g")
+                  .attr("class", chartTooltip)
+                  .append("g")
+                  .attr("class", chartTooltipYtrasnform);
 
-                tooltip.current
+                chart
+                  .select(`.${chartTooltip}`)
                   .append("line")
                   .attr("y1", hoverLineY1)
                   .attr("y2", hoverLineY2)
                   .style("pointer-events", "none")
                   .attr("stroke", "#a5aead")
                   .attr("shape-rendering", "crispEdges");
+
+                tooltip.current
+                  .append("rect")
+                  .attr("height", tooltipHeight)
+                  .attr("rx", 4)
+                  .attr("ry", 4)
+                  .attr("fill", "#000");
+
+                tooltip.current
+                  .append("text")
+                  .attr("alignment-baseline", "central")
+                  .attr("font-size", 12)
+                  .attr("fill", "#fff")
+                  .attr("font-family", "sans-serif");
+
+                tooltip.current
+                  .append("circle")
+                  .attr("cx", 10 + tooltipMargin)
+                  .attr("r", 3)
+                  .attr("fill", "#60c1dc");
               }
 
-              tooltip.current.attr("transform", `translate(${currX}, 0)`);
+              const index = Math.round((currX - margin.left - yScaleWidth) / dayWidthPx);
+              const { value } = data[i].values[index];
+
+              const y = yScale(value);
+
+              chart.select(`.${chartTooltip}`).attr("transform", `translate(${currX}, 0)`);
+
+              const text = tooltip.current
+                .select("text")
+                .text(`${value}${prefix}`)
+                .attr("transform", `translate(${tooltipMargin * 2 + 10 + 4}, ${0})`);
+
+              tooltip.current.attr("transform", `translate(0, ${y})`);
+              tooltip.current
+                .select("rect")
+                .attr("width", text.node().getBoundingClientRect().width + 4 + tooltipMargin * 4)
+                .attr("transform", `translate(${tooltipMargin}, ${-tooltipHeight / 2})`);
+
+              tooltip.current.select("circle").attr("transform", `translate(0, ${0})`);
             });
         }
 

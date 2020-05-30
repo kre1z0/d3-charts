@@ -4,6 +4,10 @@ export const chartContainer = "chart-container";
 
 export const chartTooltip = "chart-tooltip";
 
+export const chartTooltipYtrasnform = "chart-tooltip-y-transform";
+
+const tooltipAnimation = `transform 200ms linear`;
+
 export const Container = styled.div.attrs(({ height }) => ({
   style: {
     height,
@@ -16,6 +20,11 @@ export const Container = styled.div.attrs(({ height }) => ({
   }
 
   ${`.${chartTooltip}`} {
-    transition: transform 200ms cubic-bezier(0.3, 0, 0.7, 0.1);
+    pointer-events: none;
+    transition: ${tooltipAnimation};
+  }
+
+  ${`.${chartTooltipYtrasnform}`} {
+    transition: ${tooltipAnimation};
   }
 `;

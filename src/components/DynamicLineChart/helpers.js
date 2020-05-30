@@ -1,4 +1,5 @@
 import { useRef, useEffect, useCallback } from "react";
+import ru from "date-fns/locale/ru";
 
 function isTouchEvent(event) {
   return !!event.touches;
@@ -72,3 +73,10 @@ export function animate({ duration = 144, timing, draw }) {
 }
 
 export const easeOutQuad = (t) => t * (2 - t);
+
+export const getShortMonts = () =>
+  Array.from({ length: 12 }, (_, monthIndex) => {
+    const str = ru.localize.month(monthIndex, { width: "abbreviated" }).substring(0, 3);
+
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  });
