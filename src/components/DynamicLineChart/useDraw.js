@@ -5,7 +5,7 @@ import closestTo from "date-fns/closestTo";
 import { useCallback, useRef, useEffect, useState } from "react";
 
 import { getPosition, detectMob, useThrottle, animate, easeOutQuad } from "./helpers";
-import { chartContainer } from "./styled";
+import { chartContainer, chartTooltip } from "./styled";
 
 export const getShortMonts = () =>
   Array.from({ length: 12 }, (_, monthIndex) => {
@@ -25,10 +25,7 @@ export function useDraw(props) {
   const speed = useRef(0);
   const animation = useRef(null);
   const prevPath = useRef(null);
-
-  const hoverLine = useRef(null);
-  const hoverCoords = useRef(null);
-  const hoverAnimation = useRef(0);
+  const tooltip = useRef(null);
 
   useEffect(() => {
     cancelAnimationFrame(animation.current);
@@ -37,9 +34,7 @@ export function useDraw(props) {
     dragEndX.current = 0;
     animation.current = null;
     prevPath.current = null;
-    hoverLine.current = null;
-    hoverCoords.current = null;
-    hoverAnimation.current = 0;
+    tooltip.current = null;
   }, [props.data]);
 
   const throttledResize = useThrottle(forceUpdate, 40);
@@ -320,11 +315,13 @@ export function useDraw(props) {
               prevPath.current = target;
             })
             .on("mouseover", () => {
-              const { x, y } = getPosition(d3.event);
+              const { x } = getPosition(d3.event);
               const currX = dragPositionX.current === null ? transformX + x : dragPositionX.current + x;
 
-              if (hoverLine.current === null) {
-                hoverLine.current = chart
+              if (tooltip.current === null) {
+                tooltip.current = chart.append("g").attr("class", chartTooltip);
+
+                tooltip.current
                   .append("line")
                   .attr("y1", hoverLineY1)
                   .attr("y2", hoverLineY2)
@@ -333,27 +330,7 @@ export function useDraw(props) {
                   .attr("shape-rendering", "crispEdges");
               }
 
-              hoverLine.current.attr("x1", currX).attr("x2", currX);
-
-              if (hoverCoords.current) {
-                const diffX = x - hoverCoords.current.x;
-                const diffY = y - hoverCoords.current.y;
-
-                animate({
-                  duration: 1000,
-                  timing: easeOutQuad,
-                  draw: (progress, requestId) => {
-                    // console.info("--> ggwp 4444 diff", currX - diffX * progress);
-                    hoverAnimation.current = requestId;
-                    hoverLine.current.attr("x1", currX).attr("x2", currX);
-
-                    if (progress === 1) {
-                    }
-                  },
-                });
-              }
-
-              hoverCoords.current = { x: currX, y };
+              tooltip.current.attr("transform", `translate(${currX}, 0)`);
             });
         }
 
