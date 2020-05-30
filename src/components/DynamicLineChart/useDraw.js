@@ -286,7 +286,7 @@ export function useDraw(props) {
             .line()
             .x((d, i) => getX(i))
             .y((d) => yScale(d.y) + ticksStrokeWith)
-            .curve(d3.curveMonotoneX);
+            .curve(d3.curveCatmullRom);
 
           chart
             .append("path")
@@ -367,8 +367,6 @@ export function useDraw(props) {
                 .select("rect")
                 .attr("width", text.node().getBoundingClientRect().width + 4 + tooltipMargin * 4)
                 .attr("transform", `translate(${tooltipMargin}, ${-tooltipHeight / 2})`);
-
-              tooltip.current.select("circle").attr("transform", `translate(0, ${0})`);
             });
         }
 
