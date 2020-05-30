@@ -147,7 +147,7 @@ export function useDraw(props) {
             const monthShort = shortMonths[months[i].getMonth()];
             xAxis
               .append("g")
-              .attr("transform", `translate(${getX(i)}, 0)`)
+              .attr("transform", `translate(${getX(i)}, 10)`)
               .append("text")
               .attr("fill", "currentColor")
               .text(monthShort);
@@ -359,7 +359,7 @@ export function useDraw(props) {
 
               const text = tooltip.current
                 .select("text")
-                .text(`${value}${prefix} ${format(date, "d")}`)
+                .text(`${value}${prefix}, ${format(date, "d")}д`)
                 .attr("transform", `translate(${tooltipMargin * 2 + 10 + 4}, ${0})`);
 
               tooltip.current.attr("transform", `translate(0, ${y})`);
