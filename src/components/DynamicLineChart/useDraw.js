@@ -1,6 +1,7 @@
 import * as d3 from "d3";
 import eachMonthOfInterval from "date-fns/eachMonthOfInterval";
 import closestTo from "date-fns/closestTo";
+import format from "date-fns/format";
 import { useCallback, useRef, useEffect, useState } from "react";
 
 import { getPosition, detectMob, useThrottle, animate, easeOutQuad, getShortMonts } from "./helpers";
@@ -350,7 +351,7 @@ export function useDraw(props) {
               }
 
               const index = Math.round((currX - margin.left - yScaleWidth) / dayWidthPx);
-              const { value } = data[i].values[index];
+              const { value, date } = data[i].values[index];
 
               const y = yScale(value);
 
@@ -358,7 +359,7 @@ export function useDraw(props) {
 
               const text = tooltip.current
                 .select("text")
-                .text(`${value}${prefix}`)
+                .text(`${value}${prefix} ${format(date, "d")}`)
                 .attr("transform", `translate(${tooltipMargin * 2 + 10 + 4}, ${0})`);
 
               tooltip.current.attr("transform", `translate(0, ${y})`);
