@@ -4,7 +4,7 @@ import eachMonthOfInterval from "date-fns/eachMonthOfInterval";
 import closestTo from "date-fns/closestTo";
 import { useCallback, useRef, useEffect, useState } from "react";
 
-import { getPosition, detectMob, useThrottle, animate } from "./helpers";
+import { getPosition, detectMob, useThrottle, animate, easeOutQuad } from "./helpers";
 import { chartContainer } from "./styled";
 
 export const getShortMonts = () =>
@@ -25,7 +25,10 @@ export function useDraw(props) {
   const speed = useRef(0);
   const animation = useRef(null);
   const prevPath = useRef(null);
+
   const hoverLine = useRef(null);
+  const hoverCoords = useRef(null);
+  const hoverAnimation = useRef(0);
 
   useEffect(() => {
     cancelAnimationFrame(animation.current);
@@ -35,6 +38,8 @@ export function useDraw(props) {
     animation.current = null;
     prevPath.current = null;
     hoverLine.current = null;
+    hoverCoords.current = null;
+    hoverAnimation.current = 0;
   }, [props.data]);
 
   const throttledResize = useThrottle(forceUpdate, 40);
@@ -190,7 +195,7 @@ export function useDraw(props) {
           if (dt < 44) {
             animate({
               duration: 2000,
-              timing: (t) => t * (2 - t),
+              timing: easeOutQuad,
               draw: (progress, requestId) => {
                 animation.current = requestId;
                 const px = Math.round(speed.current * 2 * progress);
@@ -329,6 +334,26 @@ export function useDraw(props) {
               }
 
               hoverLine.current.attr("x1", currX).attr("x2", currX);
+
+              if (hoverCoords.current) {
+                const diffX = x - hoverCoords.current.x;
+                const diffY = y - hoverCoords.current.y;
+
+                animate({
+                  duration: 1000,
+                  timing: easeOutQuad,
+                  draw: (progress, requestId) => {
+                    // console.info("--> ggwp 4444 diff", currX - diffX * progress);
+                    hoverAnimation.current = requestId;
+                    hoverLine.current.attr("x1", currX).attr("x2", currX);
+
+                    if (progress === 1) {
+                    }
+                  },
+                });
+              }
+
+              hoverCoords.current = { x: currX, y };
             });
         }
 

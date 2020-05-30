@@ -70,3 +70,5 @@ export function animate({ duration = 144, timing, draw }) {
     draw(progress, requestId);
   });
 }
+
+export const easeOutQuad = (t) => t * (2 - t);
