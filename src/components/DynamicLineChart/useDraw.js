@@ -148,13 +148,36 @@ export function useDraw(props) {
           const skipLabel = i === 0 && vertexIndices[i + 1] * dayWidthPx < xLabelMinWidth;
 
           if (months[i] && !skipLabel) {
-            const monthShort = shortMonths[months[i].getMonth()];
-            xAxis
-              .append("g")
-              .attr("transform", `translate(${getX(i)}, 10)`)
-              .append("text")
-              .attr("fill", "currentColor")
-              .text(monthShort);
+            const month = months[i].getMonth();
+            const monthShort = shortMonths[month];
+
+            const xAxisG = xAxis.append("g").attr("transform", `translate(${getX(i)}, 10)`);
+            const text = xAxisG.append("text").attr("fill", "currentColor").text(monthShort).attr("font-size", 12);
+
+            if (month === 0 || month === 11) {
+              const textHeight = text.node().getBoundingClientRect().height;
+              const textWidth = text.node().getComputedTextLength();
+              const paddingX = 6;
+              const paddingY = 2;
+
+              const rect = xAxisG
+                .insert("rect", "text")
+                .attr("height", textHeight + paddingY * 2)
+                .attr("fill", "#000")
+                .attr("y", -textHeight + paddingY / 2)
+                .attr("rx", 10)
+                .attr("ry", 10);
+
+              const tspan = text
+                .append("tspan")
+                .text(months[i].getFullYear())
+                .attr("x", textWidth + 5 + paddingX)
+                .attr("font-weight", "bold")
+                .attr("color", "#fff")
+                .attr("font-size", 10);
+              const tspanWidth = tspan.node().getComputedTextLength();
+              rect.attr("width", tspanWidth + paddingX * 2).attr("x", tspanWidth / 2);
+            }
           }
         }
 

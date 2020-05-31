@@ -21,7 +21,7 @@ const formatDate = (date) => format(date, "d-Y-M");
 
 export const App = hot(() => {
   const start = new Date(2017, 11, 1);
-  const end = new Date(2020, 10, 14);
+  const end = new Date(2021, 0, 14);
   const [linesCount, onSetLinesCount] = useState(10);
 
   const randomDynamicalData = getDynamicLineChartData({ linesCount, start, end });
