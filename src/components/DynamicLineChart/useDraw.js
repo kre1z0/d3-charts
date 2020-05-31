@@ -296,31 +296,18 @@ export function useDraw(props) {
             .y((d) => yScale(d.y) + ticksStrokeWith)
             .curve(d3.curveCatmullRom);
 
-          chart
+          const path = chart
             .append("path")
             .datum(dataset)
             .attr("d", line)
-            .attr("fill", "transparent")
+            .attr("fill", "none")
             .attr("stroke", colors[i] || colors[0])
             .attr("stroke-width", linesStrokeWith);
 
           const chartWidth = chart.node().getBoundingClientRect().width;
 
-          chart
+          path
             .on("mousedown touchstart", onStart)
-            .on("click", () => {
-              const { target } = d3.event;
-              if (prevPath.current && prevPath.current !== target) {
-                prevPath.current.setAttribute("stroke", colors[i] || colors[0]);
-                prevPath.current.setAttribute("stroke-width", 1);
-              }
-
-              if (prevPath.current !== target) {
-                target.setAttribute("stroke", "#60c1dc");
-                target.setAttribute("stroke-width", 2);
-              }
-              prevPath.current = target;
-            })
             .on("mouseover", () => {
               const { x } = getPosition(d3.event);
               const currX = dragPositionX.current === null ? transformX + x : dragPositionX.current + x;
@@ -337,7 +324,10 @@ export function useDraw(props) {
                   .attr("stroke", "#a5aead")
                   .attr("shape-rendering", "crispEdges");
 
-                tooltip.current = tooltipGlobal.append("g").attr("class", chartTooltipYtrasnform);
+                tooltip.current = tooltipGlobal
+                  .append("g")
+                  .attr("class", chartTooltipYtrasnform)
+                  .attr("stroke", "none");
 
                 tooltip.current
                   .append("rect")
@@ -351,6 +341,7 @@ export function useDraw(props) {
                   .attr("alignment-baseline", "central")
                   .attr("font-size", 12)
                   .attr("fill", "#fff")
+                  .attr("color", "#fff")
                   .attr("font-family", "sans-serif");
 
                 tooltip.current
@@ -380,6 +371,19 @@ export function useDraw(props) {
               const tX = Math.round(currX - margin.left - yScaleWidth - margin.right + tooltipMargin * 2);
               const tDiff = tX + rectWidth - chartWidth;
               tooltip.current.attr("transform", `translate(${tDiff > 0 ? -tDiff : 0}, ${y})`);
+            })
+            .on("click", () => {
+              const { target } = d3.event;
+              if (prevPath.current && prevPath.current !== target) {
+                prevPath.current.setAttribute("stroke", colors[i] || colors[0]);
+                prevPath.current.setAttribute("stroke-width", 1);
+              }
+
+              if (prevPath.current !== target) {
+                target.setAttribute("stroke", "#60c1dc");
+                target.setAttribute("stroke-width", 2);
+              }
+              prevPath.current = target;
             });
         }
 
