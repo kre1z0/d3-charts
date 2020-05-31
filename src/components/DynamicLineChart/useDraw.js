@@ -129,7 +129,11 @@ export function useDraw(props) {
         const paddings = width - margin.left - margin.right - yScaleWidth;
         const defaultTranslate = (itemMaxLength.values.length - 1) * dayWidthPx;
         const transformX = Math.ceil(defaultTranslate - paddings);
-        const chart = svg.append("g").attr("class", chartContainer).attr("transform", `translate(-${transformX}, 0)`);
+        const chart = svg
+          .append("g")
+          .attr("class", chartContainer)
+          .attr("transform", `translate(-${transformX}, 0)`)
+          .style("cursor", "pointer");
 
         const xAxisPosition = yScaleXRange + yScalePadding;
         const xAxis = svg
@@ -164,7 +168,7 @@ export function useDraw(props) {
           .attr("fill", "rgba(0, 0, 0, 0)");
 
         const onEnd = () => {
-          chart.attr("class", chartContainer);
+          chart.style("cursor", "pointer");
           body.style("cursor", null);
 
           if (isMobile) {
@@ -254,7 +258,7 @@ export function useDraw(props) {
 
           const { x } = getPosition(d3.event);
           dragStartX.current = x;
-          chart.attr("class", null);
+          chart.style("cursor", null);
 
           if (dragPositionX.current === null) {
             dragPositionX.current = transformX;
