@@ -177,7 +177,11 @@ export function useDraw(props) {
 
           rect.style("cursor", "grab");
           dragStartX.current = 0;
-          dragPositionX.current = dragEndX.current;
+
+          if (dragEndX.current) {
+            dragPositionX.current = dragEndX.current;
+          }
+
           currentX.current = 0;
           document.removeEventListener("mousemove", onMove);
           document.removeEventListener("touchmove", onMove);
