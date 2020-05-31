@@ -292,9 +292,13 @@ export function useDraw(props) {
             .append("path")
             .datum(dataset)
             .attr("d", line)
-            .attr("fill", "none")
+            .attr("fill", "transparent")
             .attr("stroke", colors[i] || colors[0])
-            .attr("stroke-width", linesStrokeWith)
+            .attr("stroke-width", linesStrokeWith);
+
+          const chartWidth = chart.node().getBoundingClientRect().width;
+
+          chart
             .on("mousedown touchstart", onStart)
             .on("click", () => {
               const { target } = d3.event;
@@ -314,11 +318,7 @@ export function useDraw(props) {
               const currX = dragPositionX.current === null ? transformX + x : dragPositionX.current + x;
 
               if (tooltip.current === null) {
-                tooltip.current = chart
-                  .append("g")
-                  .attr("class", chartTooltip)
-                  .append("g")
-                  .attr("class", chartTooltipYtrasnform);
+                const tooltipGlobal = chart.append("g").attr("class", chartTooltip);
 
                 chart
                   .select(`.${chartTooltip}`)
@@ -328,6 +328,8 @@ export function useDraw(props) {
                   .style("pointer-events", "none")
                   .attr("stroke", "#a5aead")
                   .attr("shape-rendering", "crispEdges");
+
+                tooltip.current = tooltipGlobal.append("g").attr("class", chartTooltipYtrasnform);
 
                 tooltip.current
                   .append("rect")
@@ -352,21 +354,24 @@ export function useDraw(props) {
 
               const index = Math.round((currX - margin.left - yScaleWidth) / dayWidthPx);
               const { value, date } = data[i].values[index];
-
               const y = yScale(value);
-
-              chart.select(`.${chartTooltip}`).attr("transform", `translate(${currX}, 0)`);
 
               const text = tooltip.current
                 .select("text")
                 .text(`${value}${prefix}, ${format(date, "d")}д`)
                 .attr("transform", `translate(${tooltipMargin * 2 + 10 + 4}, ${0})`);
 
-              tooltip.current.attr("transform", `translate(0, ${y})`);
+              const rectWidth = text.node().getBoundingClientRect().width + 4 + tooltipMargin * 4;
+
+              chart.select(`.${chartTooltip}`).attr("transform", `translate(${currX}, 0)`);
               tooltip.current
                 .select("rect")
-                .attr("width", text.node().getBoundingClientRect().width + 4 + tooltipMargin * 4)
+                .attr("width", rectWidth)
                 .attr("transform", `translate(${tooltipMargin}, ${-tooltipHeight / 2})`);
+
+              const tX = Math.round(currX - margin.left - yScaleWidth - margin.right + tooltipMargin * 2);
+              const tDiff = tX + rectWidth - chartWidth;
+              tooltip.current.attr("transform", `translate(${tDiff > 0 ? -tDiff : 0}, ${y})`);
             });
         }
 
