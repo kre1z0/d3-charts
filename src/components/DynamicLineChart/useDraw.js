@@ -45,6 +45,13 @@ export function useDraw(props) {
         const tooltipHeight = 20;
         const tooltipMargin = 5;
         const isMobile = detectMob();
+        const width = Math.min(innerWidth, node.getBoundingClientRect().width);
+        const ticksStrokeWith = 1;
+        const linesStrokeWith = 1;
+        const xScaleHeight = 20;
+        const margin = { bottom: 20, top: 20, left: 20, right: 40 };
+        const shortMonths = getShortMonts();
+        const xLabelMinWidth = 30;
 
         const months = eachMonthOfInterval({ start, end });
         const indexMaxCount = data.reduce((acc, { values }, index) => (acc > values.length ? acc : index), 0);
@@ -58,14 +65,6 @@ export function useDraw(props) {
             return index;
           },
         );
-
-        const width = Math.min(innerWidth, node.getBoundingClientRect().width);
-        const ticksStrokeWith = 1;
-        const linesStrokeWith = 1;
-        const xScaleHeight = 20;
-        const margin = { bottom: 20, top: 20, left: 20, right: 40 };
-        const shortMonths = getShortMonts();
-        const xLabelMinWidth = 30;
 
         /** SVG **/
         const body = d3.select("body");
@@ -156,14 +155,13 @@ export function useDraw(props) {
 
             if (month === 0 || month === 11) {
               const textHeight = text.node().getBoundingClientRect().height;
-              const textWidth = text.node().getComputedTextLength();
               const paddingX = 6;
               const paddingY = 2;
 
               const rect = xAxisG
                 .insert("rect", "text")
                 .attr("height", textHeight + paddingY * 2)
-                .attr("fill", "#000")
+                .attr("fill", "#697b88")
                 .attr("y", -textHeight + paddingY / 2)
                 .attr("rx", 10)
                 .attr("ry", 10);
@@ -171,12 +169,17 @@ export function useDraw(props) {
               const tspan = text
                 .append("tspan")
                 .text(months[i].getFullYear())
-                .attr("x", textWidth + 5 + paddingX)
                 .attr("font-weight", "bold")
                 .attr("color", "#fff")
-                .attr("font-size", 10);
+                .attr("font-size", 8)
+                .attr("dx", 5 + paddingX);
+
               const tspanWidth = tspan.node().getComputedTextLength();
-              rect.attr("width", tspanWidth + paddingX * 2).attr("x", tspanWidth / 2);
+              const textWidth = text.node().getBoundingClientRect().width;
+
+              rect
+                .attr("width", tspanWidth + paddingX * 2)
+                .attr("x", -textWidth / 2 + (textWidth - tspanWidth - paddingX));
             }
           }
         }
