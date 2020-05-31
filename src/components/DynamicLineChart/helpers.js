@@ -1,3 +1,4 @@
+import * as d3 from "d3";
 import { useRef, useEffect, useCallback } from "react";
 import ru from "date-fns/locale/ru";
 
@@ -80,3 +81,7 @@ export const getShortMonts = () =>
 
     return str.charAt(0).toUpperCase() + str.slice(1);
   });
+
+export const getTranslateX = (element) => {
+  return Math.abs(element.attr("transform").match(/(-?[0-9\.]+)/g)[0]);
+};

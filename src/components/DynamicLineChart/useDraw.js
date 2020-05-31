@@ -4,14 +4,13 @@ import closestTo from "date-fns/closestTo";
 import format from "date-fns/format";
 import { useCallback, useRef, useEffect, useState } from "react";
 
-import { getPosition, detectMob, useThrottle, animate, easeOutQuad, getShortMonts } from "./helpers";
-import { chartContainer, chartTooltip, chartTooltipYtrasnform } from "./styled";
+import { getPosition, detectMob, useThrottle, animate, easeOutQuad, getShortMonts, getTranslateX } from "./helpers";
+import { chartContainer, chartTooltip, chartTooltipYtrasnform, tooltipAnimation } from "./styled";
 
 export function useDraw(props) {
-  const [innerWidth, updateState] = useState(window.innerWidth);
-  const forceUpdate = useCallback(() => updateState(window.innerWidth), []);
+  const [innerWidth, updateInnerWidth] = useState(window.innerWidth);
+  const updateWidth = useCallback(() => updateInnerWidth(window.innerWidth), []);
   const dragStartX = useRef(0);
-  const dragEndX = useRef(0);
   const dragPositionX = useRef(null);
   const currentX = useRef(0);
   const timestamp = useRef(0);
@@ -24,13 +23,12 @@ export function useDraw(props) {
     cancelAnimationFrame(animation.current);
     dragPositionX.current = null;
     currentX.current = 0;
-    dragEndX.current = 0;
     animation.current = null;
     prevPath.current = null;
     tooltip.current = null;
-  }, [props.data]);
+  }, [props.data, innerWidth]);
 
-  const throttledResize = useThrottle(forceUpdate, 40);
+  const throttledResize = useThrottle(updateWidth, 40);
 
   useEffect(() => {
     window.addEventListener("resize", throttledResize);
@@ -194,6 +192,7 @@ export function useDraw(props) {
           .attr("fill", "rgba(0, 0, 0, 0)");
 
         const onEnd = () => {
+          const translateX = getTranslateX(chart);
           chart.style("cursor", "pointer");
           body.style("cursor", null);
 
@@ -204,9 +203,7 @@ export function useDraw(props) {
           rect.style("cursor", "grab");
           dragStartX.current = 0;
 
-          if (dragEndX.current) {
-            dragPositionX.current = dragEndX.current;
-          }
+          dragPositionX.current = getTranslateX(chart);
 
           currentX.current = 0;
           document.removeEventListener("mousemove", onMove);
@@ -226,10 +223,9 @@ export function useDraw(props) {
                 const currX = dragPositionX.current - px;
                 const transX = Math.max(Math.min(currX, transformX), 0);
 
-                if (dragEndX.current !== transX) {
+                if (translateX !== transX) {
                   xAxis.attr("transform", `translate(-${transX}, ${xAxisPosition})`);
                   chart.attr("transform", `translate(-${transX}, 0)`);
-                  dragEndX.current = transX;
                 }
 
                 if (progress === 1) {
@@ -243,6 +239,7 @@ export function useDraw(props) {
         };
 
         const onMove = (event) => {
+          const translateX = getTranslateX(chart);
           const { x } = getPosition(event);
 
           const left = currentX.current < x;
@@ -250,10 +247,9 @@ export function useDraw(props) {
           const currX = dragPositionX.current - (x - dragStartX.current);
           const transX = Math.max(Math.min(currX, transformX), 0);
 
-          if (dragEndX.current !== transX) {
+          if (translateX !== transX) {
             xAxis.attr("transform", `translate(-${transX}, ${xAxisPosition})`);
             chart.attr("transform", `translate(-${transX}, 0)`);
-            dragEndX.current = transX;
           }
 
           const restartR = currX > transformX && left && currentX.current !== 0;
@@ -283,7 +279,7 @@ export function useDraw(props) {
             speed.current = 0;
             timestamp.current = 0;
             cancelAnimationFrame(animation.current);
-            dragPositionX.current = dragEndX.current;
+            dragPositionX.current = getTranslateX(chart);
           }
 
           const { x } = getPosition(d3.event);
@@ -375,6 +371,9 @@ export function useDraw(props) {
                   .attr("cx", 10 + tooltipMargin)
                   .attr("r", 3)
                   .attr("fill", "#60c1dc");
+              } else {
+                chart.select(`.${chartTooltip}`).style("transition", tooltipAnimation);
+                tooltip.current.style("transition", tooltipAnimation);
               }
 
               const index = Math.round((currX - margin.left - yScaleWidth) / dayWidthPx);
@@ -389,6 +388,7 @@ export function useDraw(props) {
               const rectWidth = text.node().getBoundingClientRect().width + 4 + tooltipMargin * 4;
 
               chart.select(`.${chartTooltip}`).attr("transform", `translate(${currX}, 0)`);
+
               tooltip.current
                 .select("rect")
                 .attr("width", rectWidth)
