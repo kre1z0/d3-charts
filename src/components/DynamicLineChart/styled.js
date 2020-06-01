@@ -8,6 +8,8 @@ export const chartTooltipYtrasnform = "chart-tooltip-y-transform";
 
 export const tooltipAnimation = `transform 200ms linear`;
 
+export const xAxisClass = "x-axis-container";
+
 export const Container = styled.div.attrs(({ height }) => ({
   style: {
     height,

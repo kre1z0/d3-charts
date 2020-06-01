@@ -4,17 +4,16 @@ import closestTo from "date-fns/closestTo";
 import format from "date-fns/format";
 import { useCallback, useRef, useEffect, useState } from "react";
 
-import { getPosition, detectMob, useThrottle, animate, easeOutQuad, getShortMonts, getTranslateX } from "./helpers";
-import { chartContainer, chartTooltip, chartTooltipYtrasnform, tooltipAnimation } from "./styled";
+import { getPosition, detectMob, animate, easeOutQuad, getShortMonts, getTranslateX } from "./helpers";
+import { chartContainer, chartTooltip, chartTooltipYtrasnform, tooltipAnimation, xAxisClass } from "./styled";
 
 export function useDraw(props) {
-  const [innerWidth, updateInnerWidth] = useState(window.innerWidth);
-  const updateWidth = useCallback(() => updateInnerWidth(window.innerWidth), []);
-  const dragStartX = useRef(0);
+  const [container, onSetNode] = useState({});
+  const dragStartX = useRef(null);
   const dragPositionX = useRef(null);
   const currentX = useRef(0);
-  const timestamp = useRef(0);
-  const speed = useRef(0);
+  const timestamp = useRef(null);
+  const speed = useRef(null);
   const animation = useRef(null);
   const prevPath = useRef(null);
   const tooltip = useRef(null);
@@ -26,28 +25,20 @@ export function useDraw(props) {
     animation.current = null;
     prevPath.current = null;
     tooltip.current = null;
-  }, [props.data, innerWidth]);
-
-  const throttledResize = useThrottle(updateWidth, 40);
-
-  useEffect(() => {
-    window.addEventListener("resize", throttledResize);
-    return () => window.removeEventListener("resize", throttledResize);
-  }, []);
+  }, [props.data]);
 
   const ref = useCallback(
     (node) => {
       if (node !== null && Array.isArray(props.data) && props.data.length) {
-        const { height, data, colors, start, end, prefix } = props;
+        const { height, data, colors, start, end, prefix, margin } = props;
         const dayWidthPx = 4;
         const tooltipHeight = 20;
         const tooltipMargin = 5;
         const isMobile = detectMob();
-        const width = Math.min(innerWidth, node.getBoundingClientRect().width);
+        const width = Math.min(window.innerWidth, node.getBoundingClientRect().width);
         const ticksStrokeWith = 1;
         const linesStrokeWith = 1;
         const xScaleHeight = 20;
-        const margin = { bottom: 20, top: 20, left: 20, right: 40 };
         const shortMonths = getShortMonts();
         const xLabelMinWidth = 30;
 
@@ -123,20 +114,28 @@ export function useDraw(props) {
           return index > 0 ? vertexIndices[index] * dayWidthPx + left : left;
         };
 
-        const paddings = width - margin.left - margin.right - yScaleWidth;
-        const defaultTranslate = (itemMaxLength.values.length - 1) * dayWidthPx;
-        const transformX = Math.ceil(defaultTranslate - paddings);
+        const getMaxTranslateX = () => {
+          const width = Math.min(window.innerWidth, node.getBoundingClientRect().width);
+          const paddings = width - margin.left - margin.right - yScaleWidth;
+          const defaultTranslate = (itemMaxLength.values.length - 1) * dayWidthPx;
+
+          return Math.ceil(defaultTranslate - paddings);
+        };
+
+        const translateX = getMaxTranslateX();
+
         const chart = svg
           .append("g")
           .attr("class", chartContainer)
-          .attr("transform", `translate(-${transformX}, 0)`)
+          .attr("transform", `translate(-${translateX}, 0)`)
           .style("cursor", "pointer");
 
         const xAxisPosition = yScaleXRange + yScalePadding;
         const xAxis = svg
           .append("g")
+          .attr("class", xAxisClass)
           .attr("color", "#c6c6c6")
-          .attr("transform", `translate(-${transformX}, ${xAxisPosition})`)
+          .attr("transform", `translate(-${translateX}, ${xAxisPosition})`)
           .attr("text-anchor", "middle")
           .attr("font-size", 10)
           .attr("font-family", "sans-serif");
@@ -193,6 +192,7 @@ export function useDraw(props) {
 
         const onEnd = () => {
           const translateX = getTranslateX(chart);
+          const maxTranslateX = getMaxTranslateX();
           chart.style("cursor", "pointer");
           body.style("cursor", null);
 
@@ -221,7 +221,7 @@ export function useDraw(props) {
                 animation.current = requestId;
                 const px = Math.round(speed.current * 2 * progress);
                 const currX = dragPositionX.current - px;
-                const transX = Math.max(Math.min(currX, transformX), 0);
+                const transX = Math.max(Math.min(currX, maxTranslateX), 0);
 
                 if (translateX !== transX) {
                   xAxis.attr("transform", `translate(-${transX}, ${xAxisPosition})`);
@@ -241,18 +241,19 @@ export function useDraw(props) {
         const onMove = (event) => {
           const translateX = getTranslateX(chart);
           const { x } = getPosition(event);
+          const maxTranslateX = getMaxTranslateX();
 
           const left = currentX.current < x;
           const right = currentX.current > x;
           const currX = dragPositionX.current - (x - dragStartX.current);
-          const transX = Math.max(Math.min(currX, transformX), 0);
+          const transX = Math.max(Math.min(currX, maxTranslateX), 0);
 
           if (translateX !== transX) {
             xAxis.attr("transform", `translate(-${transX}, ${xAxisPosition})`);
             chart.attr("transform", `translate(-${transX}, 0)`);
           }
 
-          const restartR = currX > transformX && left && currentX.current !== 0;
+          const restartR = currX > maxTranslateX && left && currentX.current !== 0;
 
           const restartL = currX < 0 && right && currentX.current !== 0;
 
@@ -287,7 +288,7 @@ export function useDraw(props) {
           chart.style("cursor", null);
 
           if (dragPositionX.current === null) {
-            dragPositionX.current = transformX;
+            dragPositionX.current = getTranslateX(chart);
           }
 
           body.style("cursor", "grabbing");
@@ -331,8 +332,9 @@ export function useDraw(props) {
           path
             .on("mousedown touchstart", onStart)
             .on("mouseover", () => {
+              const translateX = getTranslateX(chart);
               const { x } = getPosition(d3.event);
-              const currX = dragPositionX.current === null ? transformX + x : dragPositionX.current + x;
+              const currX = translateX + x;
 
               if (tooltip.current === null) {
                 const tooltipGlobal = chart.append("g").attr("class", chartTooltip);
@@ -413,10 +415,12 @@ export function useDraw(props) {
             });
         }
 
+        onSetNode({ node, xAxisPosition, yScaleWidth });
         rect.on("mousedown touchstart", onStart);
       }
     },
-    [props.data, innerWidth],
+    [props.data],
   );
-  return [ref];
+
+  return [ref, container];
 }

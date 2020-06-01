@@ -1,11 +1,22 @@
-import React from "react";
+import React, { useEffect } from "react";
 
+import { onResize } from "./handlers";
 import { useDraw } from "./useDraw";
 import { Container } from "./styled";
 
 export const DynamicLineChart = (props) => {
-  const { height } = props;
-  const [ref] = useDraw(props);
+  const { height, margin } = props;
+  const [ref, redords] = useDraw(props);
+
+  useEffect(() => {
+    const args = { height, margin, ...redords };
+
+    if (redords.node) {
+      window.addEventListener("resize", () => onResize(args));
+    }
+
+    return () => window.removeEventListener("resize", () => onResize(args));
+  }, [redords.node]);
 
   return <Container ref={ref} height={height} />;
 };
@@ -15,4 +26,5 @@ DynamicLineChart.defaultProps = {
   data: [],
   colors: ["#1FB3AA"],
   prefix: "₽",
+  margin: { bottom: 20, top: 20, left: 20, right: 40 },
 };
