@@ -415,7 +415,7 @@ export function useDraw(props) {
             });
         }
 
-        onSetNode({ node, xAxisPosition, yScaleWidth, getMaxTranslateX });
+        onSetNode({ node, xAxisPosition, getMaxTranslateX });
         rect.on("mousedown touchstart", onStart);
       }
     },
