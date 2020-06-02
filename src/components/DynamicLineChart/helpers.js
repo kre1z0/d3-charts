@@ -75,9 +75,13 @@ export function animate({ duration = 144, timing, draw }) {
 
 export const easeOutQuad = (t) => t * (2 - t);
 
-export const getShortMonts = () =>
+export const getShortMonts = (lower) =>
   Array.from({ length: 12 }, (_, monthIndex) => {
     const str = ru.localize.month(monthIndex, { width: "abbreviated" }).substring(0, 3);
+
+    if (lower) {
+      return str;
+    }
 
     return str.charAt(0).toUpperCase() + str.slice(1);
   });

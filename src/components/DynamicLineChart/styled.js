@@ -18,6 +18,10 @@ export const Container = styled.div.attrs(({ height }) => ({
   user-select: none;
   background-color: #2c3e4a;
 
+  ${`.${chartContainer}, .${xAxisClass}`} {
+    will-change: transform;
+  }
+
   ${`.${chartTooltip}`} {
     pointer-events: none;
   }

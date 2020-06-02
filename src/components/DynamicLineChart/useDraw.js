@@ -2,10 +2,17 @@ import * as d3 from "d3";
 import eachMonthOfInterval from "date-fns/eachMonthOfInterval";
 import closestTo from "date-fns/closestTo";
 import format from "date-fns/format";
+import isFirstDayOfMonth from "date-fns/isFirstDayOfMonth";
+import isLastDayOfMonth from "date-fns/isLastDayOfMonth";
 import { useCallback, useRef, useEffect, useState } from "react";
 
 import { getPosition, detectMob, animate, easeOutQuad, getShortMonts, getTranslateX } from "./helpers";
 import { chartContainer, chartTooltip, chartTooltipYtrasnform, tooltipAnimation, xAxisClass } from "./styled";
+
+const dayPx = {
+  months: 4,
+  days: 100,
+};
 
 export function useDraw(props) {
   const [container, onSetNode] = useState({});
@@ -25,13 +32,13 @@ export function useDraw(props) {
     animation.current = null;
     prevPath.current = null;
     tooltip.current = null;
-  }, [props.data]);
+  }, [props.data, props.dimension]);
 
   const ref = useCallback(
     (node) => {
       if (node !== null && Array.isArray(props.data) && props.data.length) {
-        const { height, data, colors, start, end, prefix, margin } = props;
-        const dayWidthPx = 4;
+        const { height, data, colors, start, end, prefix, margin, dimension } = props;
+        const dayWidthPx = dayPx[dimension];
         const tooltipHeight = 20;
         const tooltipMargin = 5;
         const isMobile = detectMob();
@@ -40,16 +47,19 @@ export function useDraw(props) {
         const linesStrokeWith = 1;
         const xScaleHeight = 20;
         const shortMonths = getShortMonts();
+        const shortMonthsLower = getShortMonts(true);
         const xLabelMinWidth = 30;
+        const isDays = dimension === "days";
+        const isMonths = dimension === "months";
 
-        const months = eachMonthOfInterval({ start, end });
         const indexMaxCount = data.reduce((acc, { values }, index) => (acc > values.length ? acc : index), 0);
         const itemMaxLength = data[indexMaxCount];
         const dates = itemMaxLength.values.map(({ date }) => date);
+        const intervals = eachMonthOfInterval({ start, end });
 
-        const vertexIndices = (+end !== +months[months.length - 1] ? [...months, end] : months).map(
-          (month, i, array) => {
-            const closestDate = i !== array.length - 1 ? closestTo(month, dates) : end;
+        const vertexIndices = (+end !== +intervals[intervals.length - 1] ? [...intervals, end] : intervals).map(
+          (interval, i, array) => {
+            const closestDate = i !== array.length - 1 ? closestTo(interval, dates) : end;
             const index = itemMaxLength.values.findIndex(({ date }) => +date === +closestDate);
             return index;
           },
@@ -111,7 +121,7 @@ export function useDraw(props) {
 
         const getX = (index) => {
           const left = margin.left + yScaleWidth;
-          return index > 0 ? vertexIndices[index] * dayWidthPx + left : left;
+          return index > 0 ? (isDays ? index : vertexIndices[index]) * dayWidthPx + left : left;
         };
 
         const getMaxTranslateX = () => {
@@ -138,19 +148,27 @@ export function useDraw(props) {
           .attr("transform", `translate(-${translateX}, ${xAxisPosition})`)
           .attr("text-anchor", "middle")
           .attr("font-size", 10)
-          .attr("font-family", "sans-serif");
+          .attr("font-family", "sans-serif")
+          .style("pointer-events", "none");
 
-        for (let i = 0; i < vertexIndices.length; i++) {
+        for (let i = 0; i < (isMonths ? vertexIndices : dates).length; i++) {
+          const date = isMonths ? intervals[i] : dates[i];
           const skipLabel = i === 0 && vertexIndices[i + 1] * dayWidthPx < xLabelMinWidth;
 
-          if (months[i] && !skipLabel) {
-            const month = months[i].getMonth();
+          if ((date && !skipLabel) || isDays) {
+            const month = date.getMonth();
+            const canYear = isMonths
+              ? month === 0 || month === 11
+              : (isFirstDayOfMonth(date) || isLastDayOfMonth(date)) && (month === 0 || month === 11);
+
             const monthShort = shortMonths[month];
 
-            const xAxisG = xAxis.append("g").attr("transform", `translate(${getX(i)}, 10)`);
-            const text = xAxisG.append("text").attr("fill", "currentColor").text(monthShort).attr("font-size", 12);
+            const label = isMonths ? monthShort : `${date.getDate()} ${shortMonthsLower[month]}`;
 
-            if (month === 0 || month === 11) {
+            const xAxisG = xAxis.append("g").attr("transform", `translate(${getX(i)}, 10)`);
+            const text = xAxisG.append("text").attr("fill", "currentColor").text(label).attr("font-size", 12);
+
+            if (canYear) {
               const textHeight = text.node().getBoundingClientRect().height;
               const paddingX = 6;
               const paddingY = 2;
@@ -165,7 +183,7 @@ export function useDraw(props) {
 
               const tspan = text
                 .append("tspan")
-                .text(months[i].getFullYear())
+                .text(date.getFullYear())
                 .attr("font-weight", "bold")
                 .attr("color", "#fff")
                 .attr("font-size", 8)
@@ -308,9 +326,9 @@ export function useDraw(props) {
           /** Dataset **/
           const item = data[i];
 
-          const dataset = d3.range(vertexIndices.length).map((n) => {
-            return { y: item.values[vertexIndices[n]].value };
-          });
+          const dataset = isMonths
+            ? d3.range(vertexIndices.length).map((n) => ({ y: item.values[vertexIndices[n]].value }))
+            : d3.range(itemMaxLength.values.length).map((_, index) => ({ y: item.values[index].value }));
 
           /** Path **/
           const line = d3
@@ -419,7 +437,7 @@ export function useDraw(props) {
         rect.on("mousedown touchstart", onStart);
       }
     },
-    [props.data],
+    [props.data, props.dimension],
   );
 
   return [ref, container];

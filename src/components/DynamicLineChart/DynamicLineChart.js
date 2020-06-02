@@ -21,10 +21,14 @@ export const DynamicLineChart = (props) => {
   return <Container ref={ref} height={height} />;
 };
 
+export const dimensions = ["months", "days"];
+
 DynamicLineChart.defaultProps = {
   height: 250,
   data: [],
   colors: ["#1FB3AA"],
   prefix: "₽",
-  margin: { bottom: 20, top: 20, left: 20, right: 40 },
+  margin: { bottom: 20, top: 20, left: 20, right: 44 },
+  /** months, days **/
+  dimension: "months",
 };

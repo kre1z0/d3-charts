@@ -14,20 +14,22 @@ import { LineChart } from "components/LineChart/LineChart";
 import { StackedBarChart } from "components/StackedBarChart/StackedBarChart";
 import { HorizontalBarChart } from "components/HorizontalBarChart/HorizontalBarChart";
 import { PercentBarChart } from "components/PercentBarChart/PercentBarChart";
-import { DynamicLineChart } from "components/DynamicLineChart/DynamicLineChart";
+import { DynamicLineChart, dimensions } from "components/DynamicLineChart/DynamicLineChart";
 import { Item, PaddingX, NumberInput } from "components/App/styled";
 
 const formatDate = (date) => format(date, "d-Y-M");
 
 export const App = hot(() => {
   const start = new Date(2017, 11, 1);
-  const end = new Date(2021, 0, 14);
+  const end = new Date(2020, 0, 1);
   const [linesCount, onSetLinesCount] = useState(10);
 
+  const [currDimension, onSetDimension] = useState("days");
   const randomDynamicalData = getDynamicLineChartData({ linesCount, start, end });
   const [dynamicLineChartData, onDynamicLineChartRandom] = useState(
     getDynamicLineChartData({ linesCount, start, end }),
   );
+
   const [lineChartData, onLineChartRandom] = useState(lineChartRandomData());
   const [stackedBarChartData, onStackedBarChartRandom] = useState(stackedBarChartRandomData());
   const [horizontalBarChartData, onHorizontalBarChartRandom] = useState(horizontalBarChartRandomData());
@@ -49,8 +51,22 @@ export const App = hot(() => {
         />
         <PaddingX />
         from {formatDate(start)} to {formatDate(end)}
+        <PaddingX />
+        <label htmlFor="dimensions">dimensions</label>{" "}
+        <select
+          name="dimension"
+          id="dimensions"
+          value={currDimension}
+          onChange={({ target }) => onSetDimension(target.value)}
+        >
+          {dimensions.map((dimension) => (
+            <option key={dimension} value={dimension}>
+              {dimension}
+            </option>
+          ))}
+        </select>
       </Item>
-      <DynamicLineChart data={dynamicLineChartData} start={start} end={end} />
+      <DynamicLineChart dimension={currDimension} data={dynamicLineChartData} start={start} end={end} />
       <Item>
         <button onClick={() => onLineChartRandom(lineChartRandomData())}>Randomize data</button>
         <br />
