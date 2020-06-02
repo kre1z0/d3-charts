@@ -4,6 +4,18 @@ object-assign
 @license MIT
 */
 
+/*!
+ * Bowser - a browser detector
+ * https://github.com/ded/bowser
+ * MIT License | (c) Dustin Diaz 2015
+ */
+
+/*!
+* Tippy.js v3.2.0
+* (c) 2017-2018 atomiks
+* MIT
+*/
+
 /**
  * @license
  * Lodash <https://lodash.com/>
@@ -48,3 +60,5 @@ object-assign
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
+
+// @license MIT
