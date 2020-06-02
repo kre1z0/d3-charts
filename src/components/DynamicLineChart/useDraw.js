@@ -45,7 +45,7 @@ export function useDraw(props) {
         const width = Math.min(window.innerWidth, node.getBoundingClientRect().width);
         const ticksStrokeWith = 1;
         const linesStrokeWith = 1;
-        const interactiveLinesStrokeWith = 2;
+        const interactiveLinesStrokeWith = 4;
         const xScaleHeight = 20;
         const shortMonths = getShortMonts();
         const shortMonthsLower = getShortMonts(true);
@@ -414,13 +414,11 @@ export function useDraw(props) {
                 .text(`${value}${prefix}, ${format(date, "d")}д`)
                 .attr("transform", `translate(${tooltipMargin * 2 + 10 + 4}, ${0})`);
 
-              const rectWidth = text.node().getBoundingClientRect().width + 4 + tooltipMargin * 4;
-
-              if (currX === getTranslateX(tooltip.current.container)) {
-                console.info("--> ggwp 4444");
+              if (currX !== getTranslateX(tooltip.current.container)) {
+                tooltip.current.container.attr("transform", `translate(${currX}, 0)`);
               }
 
-              tooltip.current.container.attr("transform", `translate(${currX}, 0)`);
+              const rectWidth = text.node().getBoundingClientRect().width + 4 + tooltipMargin * 4;
 
               tooltip.current.rect
                 .attr("width", rectWidth)
@@ -428,8 +426,9 @@ export function useDraw(props) {
 
               const tX = Math.round(currX - margin.left - yScaleWidth - margin.right + tooltipMargin * 2);
               const tDiff = tX + rectWidth - chartWidth;
+              const tooltipTranslateX = tDiff > 0 ? -tDiff : 0;
 
-              tooltip.current.tooltip.attr("transform", `translate(${tDiff > 0 ? -tDiff : 0}, ${y})`);
+              tooltip.current.tooltip.attr("transform", `translate(${tooltipTranslateX}, ${y})`);
             })
             .on("click", () => {
               const target = path;

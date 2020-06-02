@@ -44,7 +44,7 @@ export const App = hot(() => {
           label="lines count"
           width={100}
           counter
-          min={0}
+          min={1}
           max={999}
           value={linesCount}
           onChange={onSetLinesCount}
