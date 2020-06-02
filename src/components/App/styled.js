@@ -11,7 +11,7 @@ export const PaddingX = styled.div`
   width: 1rem;
 `;
 
-export const NumberInput = styled.input`
-  padding: 0.25rem 0.5rem;
-  width: 4rem;
+export const Control = styled(Item)`
+  display: flex;
+  align-items: flex-end;
 `;

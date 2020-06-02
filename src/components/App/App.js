@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { hot } from "react-hot-loader/root";
 import format from "date-fns/format";
+import { DatePicker, RaisedButton, NumberInput, Dropdown } from "@evergis/ui";
 
 import {
   lineChartRandomData,
@@ -8,21 +9,20 @@ import {
   horizontalBarChartRandomData,
   percentBarChartRandomData,
 } from "helpers/development/random";
-import { GlobalStyle } from "styles";
 import { getDynamicLineChartData } from "components/DynamicLineChart/getData";
 import { LineChart } from "components/LineChart/LineChart";
 import { StackedBarChart } from "components/StackedBarChart/StackedBarChart";
 import { HorizontalBarChart } from "components/HorizontalBarChart/HorizontalBarChart";
 import { PercentBarChart } from "components/PercentBarChart/PercentBarChart";
 import { DynamicLineChart, dimensions } from "components/DynamicLineChart/DynamicLineChart";
-import { Item, PaddingX, NumberInput } from "components/App/styled";
+import { Item, PaddingX, Control } from "components/App/styled";
 
 const formatDate = (date) => format(date, "d-Y-M");
 
 export const App = hot(() => {
-  const start = new Date(2017, 11, 1);
-  const end = new Date(2020, 0, 1);
   const [linesCount, onSetLinesCount] = useState(10);
+  const [start, onSetStart] = useState(new Date(2018, 11, 1));
+  const [end, onSetEnd] = useState(new Date(2020, 0, 11));
 
   const [currDimension, onSetDimension] = useState("days");
   const randomDynamicalData = getDynamicLineChartData({ linesCount, start, end });
@@ -37,56 +37,55 @@ export const App = hot(() => {
 
   return (
     <>
-      <GlobalStyle />
-      <Item>
-        <button onClick={() => onDynamicLineChartRandom(randomDynamicalData)}>Randomize data</button>
+      <Control>
+        <RaisedButton onClick={() => onDynamicLineChartRandom(randomDynamicalData)}>Randomize data</RaisedButton>
         <PaddingX />
-        <label htmlFor="lines-count">lines count</label>{" "}
         <NumberInput
-          id="lines-count"
-          type="number"
+          label="lines count"
+          width={100}
+          counter
           min={0}
+          max={999}
           value={linesCount}
-          onChange={({ target }) => onSetLinesCount(target.value)}
+          onChange={onSetLinesCount}
         />
         <PaddingX />
-        from {formatDate(start)} to {formatDate(end)}
+        <DatePicker label="from" id="from" type="date" value={start} onChange={onSetStart} />
         <PaddingX />
-        <label htmlFor="dimensions">dimensions</label>{" "}
-        <select
-          name="dimension"
-          id="dimensions"
+        <DatePicker label="to" id="to" type="date" value={end} onChange={onSetEnd} />
+        <PaddingX />
+        <Dropdown
+          label="dimension"
           value={currDimension}
-          onChange={({ target }) => onSetDimension(target.value)}
-        >
-          {dimensions.map((dimension) => (
-            <option key={dimension} value={dimension}>
-              {dimension}
-            </option>
-          ))}
-        </select>
-      </Item>
+          width="140px"
+          menuWidth="140px"
+          options={dimensions.map((dimension) => ({ text: dimension, value: dimension }))}
+          onChange={([{ value }]) => onSetDimension(value)}
+        />
+      </Control>
       <DynamicLineChart dimension={currDimension} data={dynamicLineChartData} start={start} end={end} />
       <Item>
-        <button onClick={() => onLineChartRandom(lineChartRandomData())}>Randomize data</button>
+        <RaisedButton onClick={() => onLineChartRandom(lineChartRandomData())}>Randomize data</RaisedButton>
         <br />
         <br />
         <LineChart data={lineChartData} />
       </Item>
       <Item>
-        <button onClick={() => onPercentBarChartRandom(percentBarChartRandomData())}>Randomize data</button>
+        <RaisedButton onClick={() => onPercentBarChartRandom(percentBarChartRandomData())}>Randomize data</RaisedButton>
         <br />
         <br />
         <PercentBarChart data={percentBarChartData} />
       </Item>
       <Item>
-        <button onClick={() => onStackedBarChartRandom(stackedBarChartRandomData())}>Randomize data</button>
+        <RaisedButton onClick={() => onStackedBarChartRandom(stackedBarChartRandomData())}>Randomize data</RaisedButton>
         <br />
         <br />
         <StackedBarChart data={stackedBarChartData} />
       </Item>
       <Item>
-        <button onClick={() => onHorizontalBarChartRandom(horizontalBarChartRandomData())}>Randomize data</button>
+        <RaisedButton onClick={() => onHorizontalBarChartRandom(horizontalBarChartRandomData())}>
+          Randomize data
+        </RaisedButton>
         <br />
         <br />
         <HorizontalBarChart data={horizontalBarChartData} />

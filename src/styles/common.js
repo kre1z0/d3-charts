@@ -5,8 +5,6 @@ export const commontStyles = css`
   html {
     overflow-y: auto;
     overflow-y: overlay;
-    padding: 0;
-    margin: 0;
     scrollbar-width: thin;
     ::-webkit-scrollbar {
       width: 12px;
@@ -25,22 +23,11 @@ export const commontStyles = css`
     }
 
     ::-webkit-scrollbar-thumb:active {
-       background-color: rgba(0, 0, 0, 0.36);
+      background-color: rgba(0, 0, 0, 0.36);
     }
 
     ::-webkit-scrollbar-corner {
       background-color: transparent;
     }
-   }
-  }
-
-  * {
-    box-sizing: border-box;
-  }
-
-  button {
-    background: none;
-    cursor: pointer;
-    padding: 4px 8px;
   }
 `;
