@@ -86,6 +86,6 @@ export const getShortMonts = (lower) =>
     return str.charAt(0).toUpperCase() + str.slice(1);
   });
 
-export const getTranslateX = (element) => {
-  return Math.abs((element.attr("transform") || `translate(0, 0)`).match(/(-?[0-9\.]+)/g)[0]);
+export const getTranslate = (element, y = false) => {
+  return Math.abs((element.attr("transform") || `translate(0, 0)`).match(/(-?[0-9\.]+)/g)[y ? 1 : 0]);
 };

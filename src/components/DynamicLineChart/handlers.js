@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { chartContainer, xAxisClass } from "./styled";
-import { getTranslateX } from "./helpers";
+import { getTranslate } from "./helpers";
 
 export const onResize = ({ node, height, xAxisPosition, getMaxTranslateX }) => {
   const width = Math.min(window.innerWidth, node.getBoundingClientRect().width);
@@ -8,7 +8,7 @@ export const onResize = ({ node, height, xAxisPosition, getMaxTranslateX }) => {
   svg.attr("viewBox", `0 0 ${width} ${height}`);
   const container = svg.select(`.${chartContainer}`);
   const xAxis = svg.select(`.${xAxisClass}`);
-  const translateX = getTranslateX(container);
+  const translateX = getTranslate(container);
   const rect = d3.select("rect");
   const newTranslateX = Math.max(Math.min(translateX, getMaxTranslateX()), 0);
   /** mutation **/

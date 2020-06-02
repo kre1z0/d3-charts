@@ -6,7 +6,7 @@ import isFirstDayOfMonth from "date-fns/isFirstDayOfMonth";
 import isLastDayOfMonth from "date-fns/isLastDayOfMonth";
 import { useCallback, useRef, useEffect, useState } from "react";
 
-import { getPosition, detectMob, animate, easeOutQuad, getShortMonts, getTranslateX } from "./helpers";
+import { getPosition, detectMob, animate, easeOutQuad, getShortMonts, getTranslate } from "./helpers";
 import { chartContainer, chartTooltip, chartTooltipYtrasnform, tooltipAnimation, xAxisClass } from "./styled";
 
 const dayPx = {
@@ -210,7 +210,7 @@ export function useDraw(props) {
           .attr("fill", "rgba(0, 0, 0, 0)");
 
         const onEnd = () => {
-          const translateX = getTranslateX(chart);
+          const translateX = getTranslate(chart);
           const maxTranslateX = getMaxTranslateX();
           chart.style("cursor", "pointer");
           body.style("cursor", null);
@@ -222,7 +222,7 @@ export function useDraw(props) {
           rect.style("cursor", "grab");
           dragStartX.current = 0;
 
-          dragPositionX.current = getTranslateX(chart);
+          dragPositionX.current = getTranslate(chart);
 
           currentX.current = 0;
           document.removeEventListener("mousemove", onMove);
@@ -262,7 +262,7 @@ export function useDraw(props) {
 
         const onMove = (event) => {
           chart.style("pointer-events", "none");
-          const translateX = getTranslateX(chart);
+          const translateX = getTranslate(chart);
           const { x } = getPosition(event);
           const maxTranslateX = getMaxTranslateX();
 
@@ -303,7 +303,7 @@ export function useDraw(props) {
             speed.current = 0;
             timestamp.current = 0;
             cancelAnimationFrame(animation.current);
-            dragPositionX.current = getTranslateX(chart);
+            dragPositionX.current = getTranslate(chart);
           }
 
           const { x } = getPosition(d3.event);
@@ -311,7 +311,7 @@ export function useDraw(props) {
           chart.style("cursor", null);
 
           if (dragPositionX.current === null) {
-            dragPositionX.current = getTranslateX(chart);
+            dragPositionX.current = getTranslate(chart);
           }
 
           body.style("cursor", "grabbing");
@@ -361,7 +361,7 @@ export function useDraw(props) {
           interactive
             .on("mousedown touchstart", onStart)
             .on("mousemove", () => {
-              const translateX = getTranslateX(chart);
+              const translateX = getTranslate(chart);
               const { x } = getPosition(d3.event);
               const currX = translateX + x;
 
@@ -414,7 +414,7 @@ export function useDraw(props) {
                 .text(`${value}${prefix}, ${format(date, "d")}д`)
                 .attr("transform", `translate(${tooltipMargin * 2 + 10 + 4}, ${0})`);
 
-              if (currX !== getTranslateX(tooltip.current.container)) {
+              if (currX !== getTranslate(tooltip.current.container)) {
                 tooltip.current.container.attr("transform", `translate(${currX}, 0)`);
               }
 
