@@ -87,5 +87,5 @@ export const getShortMonts = (lower) =>
   });
 
 export const getTranslateX = (element) => {
-  return Math.abs(element.attr("transform").match(/(-?[0-9\.]+)/g)[0]);
+  return Math.abs((element.attr("transform") || `translate(0, 0)`).match(/(-?[0-9\.]+)/g)[0]);
 };

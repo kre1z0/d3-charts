@@ -23,7 +23,7 @@ export function useDraw(props) {
   const speed = useRef(null);
   const animation = useRef(null);
   const prevPath = useRef(null);
-  const tooltip = useRef(null);
+  const tooltip = useRef({});
 
   useEffect(() => {
     cancelAnimationFrame(animation.current);
@@ -31,7 +31,7 @@ export function useDraw(props) {
     currentX.current = 0;
     animation.current = null;
     prevPath.current = null;
-    tooltip.current = null;
+    tooltip.current = {};
   }, [props.data, props.dimension]);
 
   const ref = useCallback(
@@ -365,11 +365,10 @@ export function useDraw(props) {
               const { x } = getPosition(d3.event);
               const currX = translateX + x;
 
-              if (tooltip.current === null) {
-                const tooltipGlobal = chart.append("g").attr("class", chartTooltip);
+              if (!tooltip.current.container) {
+                tooltip.current.container = chart.append("g").attr("class", chartTooltip);
 
-                chart
-                  .select(`.${chartTooltip}`)
+                tooltip.current.line = tooltip.current.container
                   .append("line")
                   .attr("y1", hoverLineY1)
                   .attr("y2", hoverLineY2)
@@ -377,19 +376,19 @@ export function useDraw(props) {
                   .attr("stroke", "#a5aead")
                   .attr("shape-rendering", "crispEdges");
 
-                tooltip.current = tooltipGlobal
+                tooltip.current.tooltip = tooltip.current.container
                   .append("g")
                   .attr("class", chartTooltipYtrasnform)
                   .attr("stroke", "none");
 
-                tooltip.current
+                tooltip.current.rect = tooltip.current.tooltip
                   .append("rect")
                   .attr("height", tooltipHeight)
                   .attr("rx", 4)
                   .attr("ry", 4)
                   .attr("fill", "#000");
 
-                tooltip.current
+                tooltip.current.text = tooltip.current.tooltip
                   .append("text")
                   .attr("alignment-baseline", "central")
                   .attr("font-size", 12)
@@ -397,37 +396,40 @@ export function useDraw(props) {
                   .attr("color", "#fff")
                   .attr("font-family", "sans-serif");
 
-                tooltip.current
+                tooltip.current.circle = tooltip.current.tooltip
                   .append("circle")
                   .attr("cx", 10 + tooltipMargin)
                   .attr("r", 3)
                   .attr("fill", "#60c1dc");
               } else {
-                chart.select(`.${chartTooltip}`).style("transition", tooltipAnimation);
-                tooltip.current.style("transition", tooltipAnimation);
+                tooltip.current.container.style("transition", tooltipAnimation);
+                tooltip.current.tooltip.style("transition", tooltipAnimation);
               }
 
               const index = Math.round((currX - margin.left - yScaleWidth) / dayWidthPx);
               const { value, date } = item.values[index];
               const y = yScale(value);
 
-              const text = tooltip.current
-                .select("text")
+              const text = tooltip.current.text
                 .text(`${value}${prefix}, ${format(date, "d")}д`)
                 .attr("transform", `translate(${tooltipMargin * 2 + 10 + 4}, ${0})`);
 
               const rectWidth = text.node().getBoundingClientRect().width + 4 + tooltipMargin * 4;
 
-              chart.select(`.${chartTooltip}`).attr("transform", `translate(${currX}, 0)`);
+              if (currX === getTranslateX(tooltip.current.container)) {
+                console.info("--> ggwp 4444");
+              }
 
-              tooltip.current
-                .select("rect")
+              tooltip.current.container.attr("transform", `translate(${currX}, 0)`);
+
+              tooltip.current.rect
                 .attr("width", rectWidth)
                 .attr("transform", `translate(${tooltipMargin}, ${-tooltipHeight / 2})`);
 
               const tX = Math.round(currX - margin.left - yScaleWidth - margin.right + tooltipMargin * 2);
               const tDiff = tX + rectWidth - chartWidth;
-              tooltip.current.attr("transform", `translate(${tDiff > 0 ? -tDiff : 0}, ${y})`);
+
+              tooltip.current.tooltip.attr("transform", `translate(${tDiff > 0 ? -tDiff : 0}, ${y})`);
             })
             .on("click", () => {
               const target = path;
