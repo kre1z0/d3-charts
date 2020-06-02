@@ -45,6 +45,7 @@ export function useDraw(props) {
         const width = Math.min(window.innerWidth, node.getBoundingClientRect().width);
         const ticksStrokeWith = 1;
         const linesStrokeWith = 1;
+        const interactiveLinesStrokeWith = 2;
         const xScaleHeight = 20;
         const shortMonths = getShortMonts();
         const shortMonthsLower = getShortMonts(true);
@@ -247,16 +248,20 @@ export function useDraw(props) {
                 }
 
                 if (progress === 1) {
+                  chart.style("pointer-events", null);
                   speed.current = 0;
                   timestamp.current = 0;
                   dragPositionX.current = transX;
                 }
               },
             });
+          } else {
+            chart.style("pointer-events", null);
           }
         };
 
         const onMove = (event) => {
+          chart.style("pointer-events", "none");
           const translateX = getTranslateX(chart);
           const { x } = getPosition(event);
           const maxTranslateX = getMaxTranslateX();
@@ -345,11 +350,17 @@ export function useDraw(props) {
             .attr("stroke", colors[i] || colors[0])
             .attr("stroke-width", linesStrokeWith);
 
+          /** Interactive path **/
+          const interactive = path
+            .clone()
+            .attr("stroke", "transparent")
+            .attr("stroke-width", interactiveLinesStrokeWith);
+
           const chartWidth = chart.node().getBoundingClientRect().width;
 
-          path
+          interactive
             .on("mousedown touchstart", onStart)
-            .on("mouseover", () => {
+            .on("mousemove", () => {
               const translateX = getTranslateX(chart);
               const { x } = getPosition(d3.event);
               const currX = translateX + x;
@@ -397,7 +408,7 @@ export function useDraw(props) {
               }
 
               const index = Math.round((currX - margin.left - yScaleWidth) / dayWidthPx);
-              const { value, date } = data[i].values[index];
+              const { value, date } = item.values[index];
               const y = yScale(value);
 
               const text = tooltip.current
@@ -419,15 +430,15 @@ export function useDraw(props) {
               tooltip.current.attr("transform", `translate(${tDiff > 0 ? -tDiff : 0}, ${y})`);
             })
             .on("click", () => {
-              const { target } = d3.event;
+              const target = path;
               if (prevPath.current && prevPath.current !== target) {
-                prevPath.current.setAttribute("stroke", colors[i] || colors[0]);
-                prevPath.current.setAttribute("stroke-width", 1);
+                prevPath.current.attr("stroke", colors[i] || colors[0]);
+                prevPath.current.attr("stroke-width", 1);
               }
 
               if (prevPath.current !== target) {
-                target.setAttribute("stroke", "#60c1dc");
-                target.setAttribute("stroke-width", 2);
+                target.attr("stroke", "#60c1dc");
+                target.attr("stroke-width", 2);
               }
               prevPath.current = target;
             });
