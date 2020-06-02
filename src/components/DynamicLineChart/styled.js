@@ -21,4 +21,8 @@ export const Container = styled.div.attrs(({ height }) => ({
   ${`.${chartTooltip}`} {
     pointer-events: none;
   }
+
+  ${`.${chartContainer}`} path {
+    cursor: pointer;
+  }
 `;

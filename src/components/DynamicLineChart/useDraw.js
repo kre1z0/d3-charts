@@ -135,12 +135,7 @@ export function useDraw(props) {
 
         const translateX = getMaxTranslateX();
 
-        const chart = svg
-          .append("g")
-          .attr("class", chartContainer)
-          .attr("transform", `translate(-${translateX}, 0)`)
-          .style("cursor", "pointer");
-
+        const chart = svg.append("g").attr("class", chartContainer).attr("transform", `translate(-${translateX}, 0)`);
         const xAxisPosition = yScaleXRange + yScalePadding;
         const xAxis = svg
           .append("g")
@@ -212,7 +207,6 @@ export function useDraw(props) {
         const onEnd = () => {
           const translateX = getTranslate(chart);
           const maxTranslateX = getMaxTranslateX();
-          chart.style("cursor", "pointer");
           body.style("cursor", null);
 
           if (isMobile) {
@@ -408,7 +402,7 @@ export function useDraw(props) {
 
               const index = Math.round((currX - margin.left - yScaleWidth) / dayWidthPx);
               const { value, date } = item.values[index];
-              const y = yScale(value);
+              const y = Math.round(yScale(value));
 
               const text = tooltip.current.text
                 .text(`${value}${prefix}, ${format(date, "d")}д`)
@@ -426,9 +420,13 @@ export function useDraw(props) {
 
               const tX = Math.round(currX - margin.left - yScaleWidth - margin.right + tooltipMargin * 2);
               const tDiff = tX + rectWidth - chartWidth;
-              const tooltipTranslateX = tDiff > 0 ? -tDiff : 0;
+              const tooltipTranslateX = Math.round(tDiff > 0 ? -tDiff : 0);
 
-              tooltip.current.tooltip.attr("transform", `translate(${tooltipTranslateX}, ${y})`);
+              const [prevX, prevY] = getTranslate(tooltip.current.tooltip, true);
+
+              if (tooltipTranslateX !== +prevX || y !== +prevY) {
+                tooltip.current.tooltip.attr("transform", `translate(${tooltipTranslateX}, ${y})`);
+              }
             })
             .on("click", () => {
               const target = path;
