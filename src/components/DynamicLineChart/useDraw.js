@@ -22,7 +22,7 @@ export function useDraw(props) {
   const timestamp = useRef(null);
   const speed = useRef(null);
   const animation = useRef(null);
-  const prevPath = useRef(null);
+  const prevPath = useRef({});
   const tooltip = useRef({});
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export function useDraw(props) {
     dragPositionX.current = null;
     currentX.current = 0;
     animation.current = null;
-    prevPath.current = null;
+    prevPath.current = {};
     tooltip.current = {};
   }, [props.data, props.dimension]);
 
@@ -347,6 +347,7 @@ export function useDraw(props) {
           /** Interactive path **/
           const interactive = path
             .clone()
+            .style("cursor", "pointer")
             .attr("stroke", "transparent")
             .attr("stroke-width", interactiveLinesStrokeWith);
 
@@ -429,17 +430,26 @@ export function useDraw(props) {
               }
             })
             .on("click", () => {
-              const target = path;
-              if (prevPath.current && prevPath.current !== target) {
-                prevPath.current.attr("stroke", colors[i] || colors[0]);
-                prevPath.current.attr("stroke-width", 1);
+              if (prevPath.current.path && prevPath.current.path !== path) {
+                prevPath.current.path.attr("stroke", colors[i] || colors[0]);
+                prevPath.current.path.attr("stroke-width", 1);
               }
 
-              if (prevPath.current !== target) {
-                target.attr("stroke", "#60c1dc");
-                target.attr("stroke-width", 2);
+              if (prevPath.current.interactivePath && prevPath.current.interactivePath !== interactive) {
+                prevPath.current.interactivePath.style("cursor", "pointer");
               }
-              prevPath.current = target;
+
+              if (prevPath.current.path !== path) {
+                path.attr("stroke", "#60c1dc");
+                path.attr("stroke-width", 2);
+              }
+
+              if (prevPath.current.interactivePath !== interactive) {
+                interactive.style("cursor", "default");
+              }
+
+              prevPath.current.path = path;
+              prevPath.current.interactivePath = interactive;
             });
         }
 
