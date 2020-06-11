@@ -128,7 +128,8 @@ export function useDraw(props) {
 
             g.select(".domain").remove();
             g.selectAll("line")
-              .attr("stroke", "#3b4852")
+              .attr("stroke", "rgba(255, 255, 255, 0.1)")
+              .attr("x1", margin.left + yScaleWidth)
               .attr("x1", margin.left + yScaleWidth)
               .attr("stroke-width", ticksStrokeWith)
               .attr("x2", width - margin.right)
@@ -151,7 +152,7 @@ export function useDraw(props) {
         const xAxis = svg
           .append("g")
           .attr("class", xAxisClass)
-          .attr("color", "#c6c6c6")
+          .attr("color", "rgba(255, 255, 255, 0.54)")
           .attr("transform", `translate(-${Math.abs(translateX)}, ${xAxisPosition})`)
           .attr("text-anchor", "middle")
           .attr("font-size", 10)
@@ -176,22 +177,21 @@ export function useDraw(props) {
             const text = xAxisG.append("text").attr("fill", "currentColor").text(label).attr("font-size", 12);
 
             if (canYear) {
-              const textHeight = text.node().getBoundingClientRect().height;
-              const paddingX = 6;
-              const paddingY = 2;
+              const textHeight = 16;
+              const paddingX = 7;
 
               const rect = xAxisG
                 .insert("rect", "text")
-                .attr("height", textHeight + paddingY * 2)
-                .attr("fill", "#697b88")
-                .attr("y", -textHeight + paddingY / 2)
-                .attr("rx", 10)
-                .attr("ry", 10);
+                .attr("height", textHeight)
+                .attr("fill", "rgba(106, 124, 137, 1)")
+                .attr("y", -11)
+                .attr("rx", 8)
+                .attr("ry", 8);
 
               const tspan = text
                 .append("tspan")
                 .text(date.getFullYear())
-                .attr("font-weight", "bold")
+                .attr("font-weight", "500")
                 .attr("color", "#fff")
                 .attr("font-size", 8)
                 .attr("dx", 5 + paddingX);

@@ -20,7 +20,7 @@ export const Container = styled.div.attrs(({ height }) => ({
   },
 }))`
   user-select: none;
-  background-color: #2c3e4a;
+  background-color: rgba(38, 53, 64, 1);
 
   ${`.${chartTooltip}`} {
     pointer-events: none;
