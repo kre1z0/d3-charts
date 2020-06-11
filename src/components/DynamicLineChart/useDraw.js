@@ -60,11 +60,11 @@ export function useDraw(props) {
         const xLabelMinWidth = 30;
         const isDays = dimension === "days";
         const isMonths = dimension === "months";
-
         const indexMaxCount = data.reduce((acc, { values }, index) => (acc > values.length ? acc : index), 0);
         const itemMaxLength = data[indexMaxCount];
         const dates = itemMaxLength.values.map(({ date }) => date);
         const intervals = eachMonthOfInterval({ start, end });
+        const widthByItems = (itemMaxLength.values.length - 1) * dayWidthPx;
 
         const vertexIndices = (+end !== +intervals[intervals.length - 1] ? [...intervals, end] : intervals).map(
           (interval, i, array) => {
@@ -76,7 +76,6 @@ export function useDraw(props) {
 
         const getMaxTranslateX = () => {
           const width = Math.min(window.innerWidth, node.getBoundingClientRect().width);
-          const widthByItems = (itemMaxLength.values.length - 1) * dayWidthPx;
           const noTranslate = widthByItems < width - margin.left - margin.right - yScaleWidth;
 
           return noTranslate ? 0 : Math.ceil(widthByItems - (width - margin.left - margin.right - yScaleWidth));
@@ -127,13 +126,14 @@ export function useDraw(props) {
             }
 
             g.select(".domain").remove();
+
             g.selectAll("line")
               .attr("stroke", "rgba(255, 255, 255, 0.1)")
-              .attr("x1", margin.left + yScaleWidth)
-              .attr("x1", margin.left + yScaleWidth)
+              .attr("x1", yScaleWidth + margin.left)
               .attr("stroke-width", ticksStrokeWith)
-              .attr("x2", width - margin.right)
+              .attr("x2", widthByItems + yScaleWidth + margin.left)
               .attr("shape-rendering", "crispEdges");
+
             g.selectAll("text").attr("transform", `translate(${margin.left + yScaleWidth}, 0)`);
           });
 
@@ -148,6 +148,15 @@ export function useDraw(props) {
           .append("g")
           .attr("class", chartContainer)
           .attr("transform", `translate(-${Math.abs(translateX)}, 0)`);
+
+        const yAxisTicks = yAxis.selectAll(".tick");
+
+        for (let i = 0; i < yAxisTicks.nodes().length; i++) {
+          const newTick = yAxisTicks.nodes()[i].cloneNode(true);
+          newTick.querySelector("text").remove();
+          chart.node().appendChild(newTick);
+        }
+
         const xAxisPosition = yScaleXRange + yScalePadding;
         const xAxis = svg
           .append("g")
@@ -379,7 +388,7 @@ export function useDraw(props) {
                   .attr("y1", hoverLineY1)
                   .attr("y2", hoverLineY2)
                   .style("pointer-events", "none")
-                  .attr("stroke", "#a5aead")
+                  .attr("stroke", "rgba(255, 255, 255, 0.5)")
                   .attr("shape-rendering", "crispEdges");
 
                 tooltip.current.tooltip = tooltip.current.container
@@ -473,6 +482,7 @@ export function useDraw(props) {
         d3.selectAll(`.${tickContainerClass} text`).remove();
         d3.selectAll(`.${yAxisClass} line`).remove();
         d3.select(`.${yAxisClass} rect`).remove();
+        yAxis.selectAll("g").remove();
 
         onSetNode({ node, xAxisPosition, getMaxTranslateX });
         rect.on("mousedown touchstart", onStart);
