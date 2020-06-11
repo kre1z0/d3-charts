@@ -7,7 +7,15 @@ import isLastDayOfMonth from "date-fns/isLastDayOfMonth";
 import { useCallback, useRef, useEffect, useState } from "react";
 
 import { getPosition, detectMob, animate, easeOutQuad, getShortMonts, getTranslate } from "./helpers";
-import { chartContainer, chartTooltip, chartTooltipYtrasnform, tooltipAnimation, xAxisClass } from "./styled";
+import {
+  chartContainer,
+  chartTooltip,
+  chartTooltipYtrasnform,
+  tooltipAnimation,
+  xAxisClass,
+  yAxisClass,
+  tickContainerClass,
+} from "./styled";
 
 const dayPx = {
   months: 4,
@@ -38,7 +46,7 @@ export function useDraw(props) {
     (node) => {
       if (node !== null && Array.isArray(props.data) && props.data.length) {
         const { height, data, colors, start, end, prefix, margin, dimension } = props;
-        const dayWidthPx = dayPx[dimension];
+        let dayWidthPx = dayPx[dimension];
         const tooltipHeight = 20;
         const tooltipMargin = 5;
         const isMobile = detectMob();
@@ -65,6 +73,14 @@ export function useDraw(props) {
             return index;
           },
         );
+
+        const getMaxTranslateX = () => {
+          const width = Math.min(window.innerWidth, node.getBoundingClientRect().width);
+          const widthByItems = (itemMaxLength.values.length - 1) * dayWidthPx;
+          const noTranslate = widthByItems < width - margin.left - margin.right - yScaleWidth;
+
+          return noTranslate ? 0 : Math.ceil(widthByItems - (width - margin.left - margin.right - yScaleWidth));
+        };
 
         /** SVG **/
         const body = d3.select("body");
@@ -125,23 +141,18 @@ export function useDraw(props) {
           return index > 0 ? (isDays ? index : vertexIndices[index]) * dayWidthPx + left : left;
         };
 
-        const getMaxTranslateX = () => {
-          const width = Math.min(window.innerWidth, node.getBoundingClientRect().width);
-          const paddings = width - margin.left - margin.right - yScaleWidth;
-          const defaultTranslate = (itemMaxLength.values.length - 1) * dayWidthPx;
-
-          return Math.ceil(defaultTranslate - paddings);
-        };
-
         const translateX = getMaxTranslateX();
 
-        const chart = svg.append("g").attr("class", chartContainer).attr("transform", `translate(-${translateX}, 0)`);
+        const chart = svg
+          .append("g")
+          .attr("class", chartContainer)
+          .attr("transform", `translate(-${Math.abs(translateX)}, 0)`);
         const xAxisPosition = yScaleXRange + yScalePadding;
         const xAxis = svg
           .append("g")
           .attr("class", xAxisClass)
           .attr("color", "#c6c6c6")
-          .attr("transform", `translate(-${translateX}, ${xAxisPosition})`)
+          .attr("transform", `translate(-${Math.abs(translateX)}, ${xAxisPosition})`)
           .attr("text-anchor", "middle")
           .attr("font-size", 10)
           .attr("font-family", "sans-serif")
@@ -237,8 +248,8 @@ export function useDraw(props) {
                 const transX = Math.max(Math.min(currX, maxTranslateX), 0);
 
                 if (translateX !== transX) {
-                  xAxis.attr("transform", `translate(-${transX}, ${xAxisPosition})`);
-                  chart.attr("transform", `translate(-${transX}, 0)`);
+                  xAxis.attr("transform", `translate(-${Math.abs(transX)}, ${xAxisPosition})`);
+                  chart.attr("transform", `translate(-${Math.abs(transX)}, 0)`);
                 }
 
                 if (progress === 1) {
@@ -266,8 +277,8 @@ export function useDraw(props) {
           const transX = Math.max(Math.min(currX, maxTranslateX), 0);
 
           if (translateX !== transX) {
-            xAxis.attr("transform", `translate(-${transX}, ${xAxisPosition})`);
-            chart.attr("transform", `translate(-${transX}, 0)`);
+            xAxis.attr("transform", `translate(-${Math.abs(transX)}, ${xAxisPosition})`);
+            chart.attr("transform", `translate(-${Math.abs(transX)}, 0)`);
           }
 
           const restartR = currX > maxTranslateX && left && currentX.current !== 0;
@@ -395,7 +406,7 @@ export function useDraw(props) {
                   .append("circle")
                   .attr("cx", 10 + tooltipMargin)
                   .attr("r", 3)
-                  .attr("fill", "#60c1dc");
+                  .attr("fill", "rgba(97, 194, 221, 1)");
               } else {
                 tooltip.current.container.style("transition", tooltipAnimation);
                 tooltip.current.tooltip.style("transition", tooltipAnimation);
@@ -440,7 +451,7 @@ export function useDraw(props) {
               }
 
               if (prevPath.current.path !== path) {
-                path.attr("stroke", "#60c1dc");
+                path.attr("stroke", "rgba(97, 194, 221, 1)");
                 path.attr("stroke-width", 2);
               }
 
@@ -452,6 +463,16 @@ export function useDraw(props) {
               prevPath.current.interactivePath = interactive;
             });
         }
+
+        const yAxisNew = yAxis.node().cloneNode(true);
+        yAxis.attr("class", tickContainerClass);
+        yAxisNew.classList.add(yAxisClass);
+
+        svg.node().appendChild(yAxisNew);
+
+        d3.selectAll(`.${tickContainerClass} text`).remove();
+        d3.selectAll(`.${yAxisClass} line`).remove();
+        d3.select(`.${yAxisClass} rect`).remove();
 
         onSetNode({ node, xAxisPosition, getMaxTranslateX });
         rect.on("mousedown touchstart", onStart);

@@ -26,7 +26,7 @@ export const dimensions = ["months", "days"];
 DynamicLineChart.defaultProps = {
   height: 250,
   data: [],
-  colors: ["#1FB3AA"],
+  colors: ["rgba(85, 103, 116, 1)"],
   prefix: "₽",
   margin: { bottom: 20, top: 20, left: 20, right: 44 },
   /** months, days **/

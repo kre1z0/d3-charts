@@ -17,14 +17,12 @@ import { PercentBarChart } from "components/PercentBarChart/PercentBarChart";
 import { DynamicLineChart, dimensions } from "components/DynamicLineChart/DynamicLineChart";
 import { Item, PaddingX, Control } from "components/App/styled";
 
-const formatDate = (date) => format(date, "d-Y-M");
-
 export const App = hot(() => {
   const [linesCount, onSetLinesCount] = useState(10);
-  const [start, onSetStart] = useState(new Date(2018, 11, 1));
+  const [start, onSetStart] = useState(new Date(2017, 11, 1));
   const [end, onSetEnd] = useState(new Date(2020, 0, 11));
 
-  const [currDimension, onSetDimension] = useState("days");
+  const [currDimension, onSetDimension] = useState("months");
   const randomDynamicalData = getDynamicLineChartData({ linesCount, start, end });
   const [dynamicLineChartData, onDynamicLineChartRandom] = useState(
     getDynamicLineChartData({ linesCount, start, end }),
