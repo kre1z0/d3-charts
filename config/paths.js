@@ -14,4 +14,5 @@ module.exports = {
   packageFile: resolve("../package.json"),
   packageLockFile: resolve("../package-lock.json"),
   staticPath: "static",
+  ui: resolve("../node_modules/@evergis/ui/src"),
 };

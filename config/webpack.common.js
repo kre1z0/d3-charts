@@ -3,7 +3,7 @@ const HTMLPlugin = require("html-webpack-plugin");
 const autoprefixer = require("autoprefixer");
 
 const babelOptions = require("../.babelrc");
-const { dist, src, nodeModules, template, staticPath } = require("./paths");
+const { dist, src, nodeModules, template, staticPath, ui } = require("./paths");
 
 module.exports = {
   mode: process.env.NODE_ENV,
@@ -16,11 +16,27 @@ module.exports = {
   resolve: {
     modules: [src, nodeModules],
     extensions: [".ts", ".tsx", ".js", "jsx", ".json"],
-    alias: { "react-dom": "@hot-loader/react-dom", "~": src },
+    alias: { "react-dom": "@hot-loader/react-dom", "~": src, "@evergis/ui": ui },
   },
 
   module: {
     rules: [
+      {
+        test: /\.tsx?$/,
+        use: [
+          {
+            loader: "babel-loader",
+            options: babelOptions,
+          },
+          {
+            loader: "ts-loader",
+            options: {
+              transpileOnly: true,
+            },
+          },
+        ],
+        include: [src, /node_modules\/(@evergis)/, /node_modules\\(@evergis)/],
+      },
       {
         test: /\.jsx?$/,
         loader: "babel-loader",

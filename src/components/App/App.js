@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { hot } from "react-hot-loader/root";
-import format from "date-fns/format";
-import { DatePicker, RaisedButton, NumberInput, Dropdown } from "@evergis/ui";
+import { groupBy, orderBy } from "lodash";
+import { DatePicker, RaisedButton, NumberInput, Dropdown, AutoComplete } from "@evergis/ui";
 
+import { pepsiCoData } from "assets/data";
+import { getScuOptions } from "helpers/development/pepsico/options";
+import { normalizeData } from "helpers/development/pepsico/normalize";
 import {
   lineChartRandomData,
   stackedBarChartRandomData,
@@ -18,6 +21,14 @@ import { DynamicLineChart, dimensions } from "components/DynamicLineChart/Dynami
 import { Item, PaddingX, Control } from "components/App/styled";
 
 export const App = hot(() => {
+  const pepsiCo = useMemo(() => groupBy(pepsiCoData, "net_id"), []);
+  const scuOptions = useMemo(() => getScuOptions(pepsiCo), []);
+
+  const [scuName, onSetScu] = useState(" ");
+  const [scuValue, onSelectScu] = useState(null);
+
+  const memoizedPepsiData = useMemo(() => normalizeData(pepsiCo[scuValue]), [scuValue]);
+
   const [linesCount, onSetLinesCount] = useState(10);
   const [start, onSetStart] = useState(new Date(2017, 11, 1));
   const [end, onSetEnd] = useState(new Date(2020, 0, 11));
@@ -59,6 +70,21 @@ export const App = hot(() => {
           menuWidth="140px"
           options={dimensions.map((dimension) => ({ text: dimension, value: dimension }))}
           onChange={([{ value }]) => onSetDimension(value)}
+        />
+        <PaddingX />
+        <AutoComplete
+          label="Товар"
+          options={scuOptions}
+          value={scuName}
+          onChange={(value) => {
+            onSetScu(value ? value : " ");
+            if (!value) {
+              onSelectScu(null);
+            }
+          }}
+          onSelect={({ value }) => onSelectScu(value)}
+          width="434px"
+          menuHeight="249px"
         />
       </Control>
       <DynamicLineChart dimension={currDimension} data={dynamicLineChartData} start={start} end={end} />

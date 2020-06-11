@@ -1,9 +1,9 @@
 import * as d3 from "d3";
-import eachMonthOfInterval from "date-fns/eachMonthOfInterval";
-import closestTo from "date-fns/closestTo";
-import format from "date-fns/format";
-import isFirstDayOfMonth from "date-fns/isFirstDayOfMonth";
-import isLastDayOfMonth from "date-fns/isLastDayOfMonth";
+import eachMonthOfInterval from "new-date-fns/eachMonthOfInterval";
+import closestTo from "new-date-fns/closestTo";
+import format from "new-date-fns/format";
+import isFirstDayOfMonth from "new-date-fns/isFirstDayOfMonth";
+import isLastDayOfMonth from "new-date-fns/isLastDayOfMonth";
 import { useCallback, useRef, useEffect, useState } from "react";
 
 import { getPosition, detectMob, animate, easeOutQuad, getShortMonts, getTranslate } from "./helpers";

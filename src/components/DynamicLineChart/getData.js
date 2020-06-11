@@ -1,5 +1,5 @@
 import { random } from "lodash";
-import eachDayOfInterval from "date-fns/eachDayOfInterval";
+import eachDayOfInterval from "new-date-fns/eachDayOfInterval";
 
 export const getDynamicLineChartData = ({ linesCount = 4, start, end }) => {
   const data = [];
