@@ -6,13 +6,15 @@ export const chartTooltip = "chart-tooltip";
 
 export const chartTooltipYtrasnform = "chart-tooltip-y-transform";
 
-export const tooltipAnimation = `transform 200ms linear`;
+export const tooltipAnimation = `transform 140ms linear`;
 
 export const xAxisClass = "x-axis-container";
 
 export const tickContainerClass = "tick-y-axis-container";
 
 export const yAxisClass = "y-axis-container";
+
+export const shareClass = "share-container";
 
 export const Container = styled.div.attrs(({ height }) => ({
   style: {

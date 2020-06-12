@@ -1,3 +1,4 @@
+import React from "react";
 import * as d3 from "d3";
 import eachMonthOfInterval from "new-date-fns/eachMonthOfInterval";
 import closestTo from "new-date-fns/closestTo";
@@ -5,7 +6,9 @@ import format from "new-date-fns/format";
 import isFirstDayOfMonth from "new-date-fns/isFirstDayOfMonth";
 import isLastDayOfMonth from "new-date-fns/isLastDayOfMonth";
 import { useCallback, useRef, useEffect, useState } from "react";
+import { renderToString } from "react-dom/server";
 
+import { TooltipIco } from "./tooltipIco";
 import { getPosition, detectMob, animate, easeOutQuad, getShortMonts, getTranslate } from "./helpers";
 import {
   chartContainer,
@@ -15,6 +18,7 @@ import {
   xAxisClass,
   yAxisClass,
   tickContainerClass,
+  shareClass,
 } from "./styled";
 
 const dayPx = {
@@ -46,7 +50,7 @@ export function useDraw(props) {
     (node) => {
       if (node !== null && Array.isArray(props.data) && props.data.length) {
         const { height, data, colors, start, end, prefix, margin, dimension } = props;
-        let dayWidthPx = dayPx[dimension];
+        const dayWidthPx = dayPx[dimension];
         const tooltipHeight = 20;
         const tooltipMargin = 5;
         const isMobile = detectMob();
@@ -97,8 +101,8 @@ export function useDraw(props) {
 
         let yScaleWidth = 0;
         const yScalePadding = 15;
-        let hoverLineY1 = 0;
-        let hoverLineY2 = 0;
+        let tickY1 = 0;
+        let tickY2 = 0;
 
         const yAxis = svg
           .append("g")
@@ -107,16 +111,16 @@ export function useDraw(props) {
           .call(
             d3
               .axisLeft(yScale)
-              .ticks(6)
+              .ticks(4)
               .tickFormat((tick, index, ticks) => {
                 if (index === 0) {
-                  hoverLineY1 = yScale(tick);
+                  tickY1 = yScale(tick);
                 }
                 if (ticks.length - 1 === index) {
-                  hoverLineY2 = yScale(tick);
+                  tickY2 = yScale(tick);
                 }
 
-                return `${tick}${prefix}`;
+                return `${tick} ${prefix}`;
               }),
           )
           .call((g) => {
@@ -134,7 +138,9 @@ export function useDraw(props) {
               .attr("x2", widthByItems + yScaleWidth + margin.left)
               .attr("shape-rendering", "crispEdges");
 
-            g.selectAll("text").attr("transform", `translate(${margin.left + yScaleWidth}, 0)`);
+            g.selectAll("text")
+              .attr("transform", `translate(${margin.left + yScaleWidth}, 0)`)
+              .attr("font-family", '"Roboto", Tahoma, sans-serif');
           });
 
         const getX = (index) => {
@@ -148,6 +154,60 @@ export function useDraw(props) {
           .append("g")
           .attr("class", chartContainer)
           .attr("transform", `translate(-${Math.abs(translateX)}, 0)`);
+
+        /** Share start **/
+        const shareContainer = chart.append("g").attr("class", shareClass);
+        const linearGradientId = "shareGradient";
+        const shareWidth = 175;
+        const shareX = widthByItems - 400;
+        const shareLine = shareContainer
+          .append("line")
+          .attr("y1", tickY1)
+          .attr("y2", tickY2)
+          .attr("stroke", "rgba(255, 218, 121, 1)")
+          .attr("shape-rendering", "crispEdges")
+          .attr("stroke-width", 1)
+          .attr("x1", shareX)
+          .attr("x2", shareX);
+
+        const rightshareLine = shareLine.node().cloneNode(true);
+        rightshareLine.setAttribute("x1", shareX + shareWidth);
+        rightshareLine.setAttribute("x2", shareX + shareWidth);
+        shareContainer.node().appendChild(rightshareLine);
+
+        shareContainer
+          .append("rect")
+          .attr("width", shareWidth)
+          .attr("y", Math.ceil(tickY2))
+          .attr("x", shareX)
+          .attr("height", Math.ceil(tickY1 - tickY2))
+          .attr("fill", `url(#${linearGradientId})`)
+          .style("pointer-events", "none");
+        const linearGradient = svg
+          .append("defs")
+          .append("linearGradient")
+          .attr("id", linearGradientId)
+          .attr("gradientTransform", "rotate(90)");
+
+        linearGradient.append("stop").attr("offset", "0%").attr("stop-color", "rgba(255, 218, 121, 0.2)");
+        linearGradient.append("stop").attr("offset", "52.6%").attr("stop-color", "rgba(255, 218, 121, 0.1)");
+        linearGradient.append("stop").attr("offset", "100%").attr("stop-color", "rgba(255, 218, 121, 0.2)");
+        const shareTooltip = shareContainer
+          .append("path")
+          .attr("fill", "rgba(255, 218, 121, 1)")
+          .attr("transform", `translate(${shareX + shareWidth - 20}, ${tickY2 + 5})`)
+          .attr(
+            "d",
+            "M7 14C10.8658 14 14 10.8658 14 7C14 3.13425 10.8658 0 7 0C3.13425 0 0 3.13425 0 7C0 10.8658 3.13425 14 7 14ZM7.79625 10.7537H6.20375V5.66125H7.805L7.79625 10.7537ZM6.195 3.381H7.79625V4.78625H6.2125L6.195 3.381Z",
+          );
+        const shareText = shareContainer
+          .append("text")
+          .text("Акция - 20%")
+          .attr("fill", "rgba(255, 218, 121, 1)")
+          .attr("x", shareX + 5)
+          .attr("y", tickY2 + 15)
+          .attr("font-size", 12);
+        /** Акция end **/
 
         const yAxisTicks = yAxis.selectAll(".tick");
 
@@ -165,7 +225,6 @@ export function useDraw(props) {
           .attr("transform", `translate(-${Math.abs(translateX)}, ${xAxisPosition})`)
           .attr("text-anchor", "middle")
           .attr("font-size", 10)
-          .attr("font-family", "sans-serif")
           .style("pointer-events", "none");
 
         for (let i = 0; i < (isMonths ? vertexIndices : dates).length; i++) {
@@ -193,7 +252,7 @@ export function useDraw(props) {
                 .insert("rect", "text")
                 .attr("height", textHeight)
                 .attr("fill", "rgba(106, 124, 137, 1)")
-                .attr("y", -11)
+                .attr("y", -12)
                 .attr("rx", 8)
                 .attr("ry", 8);
 
@@ -202,7 +261,7 @@ export function useDraw(props) {
                 .text(date.getFullYear())
                 .attr("font-weight", "500")
                 .attr("color", "#fff")
-                .attr("font-size", 8)
+                .attr("font-size", 10)
                 .attr("dx", 5 + paddingX);
 
               const tspanWidth = tspan.node().getComputedTextLength();
@@ -385,8 +444,8 @@ export function useDraw(props) {
 
                 tooltip.current.line = tooltip.current.container
                   .append("line")
-                  .attr("y1", hoverLineY1)
-                  .attr("y2", hoverLineY2)
+                  .attr("y1", tickY1)
+                  .attr("y2", tickY2)
                   .style("pointer-events", "none")
                   .attr("stroke", "rgba(255, 255, 255, 0.5)")
                   .attr("shape-rendering", "crispEdges");
@@ -407,9 +466,7 @@ export function useDraw(props) {
                   .append("text")
                   .attr("alignment-baseline", "central")
                   .attr("font-size", 12)
-                  .attr("fill", "#fff")
-                  .attr("color", "#fff")
-                  .attr("font-family", "sans-serif");
+                  .attr("fill", "#fff");
 
                 tooltip.current.circle = tooltip.current.tooltip
                   .append("circle")

@@ -24,7 +24,7 @@ export const DynamicLineChart = (props) => {
 export const dimensions = ["months", "days"];
 
 DynamicLineChart.defaultProps = {
-  height: 250,
+  height: 200,
   data: [],
   colors: ["rgba(85, 103, 116, 1)"],
   prefix: "₽",
