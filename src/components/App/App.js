@@ -1,9 +1,13 @@
 import React, { useState, useMemo } from "react";
 import { hot } from "react-hot-loader/root";
-import { groupBy, orderBy } from "lodash";
-import { DatePicker, RaisedButton, NumberInput, Dropdown, AutoComplete } from "@evergis/ui";
+import { DatePicker, RaisedButton, NumberInput, Dropdown } from "@evergis/ui";
 
-import { pepsiCoData } from "assets/data";
+import AdrenalineRush250 from "assets/products/AdrenalineRush250";
+import AdrenalineRush500 from "assets/products/AdrenalineRush500";
+import LaysSalt80 from "assets/products/LaysSalt80";
+import LaysOnion80 from "assets/products/LaysOnion80";
+import pepsi300 from "assets/products/pepsi300";
+import pepsi600 from "assets/products/pepsi600";
 import { getScuOptions } from "helpers/development/pepsico/options";
 import { normalizeData } from "helpers/development/pepsico/normalize";
 import {
@@ -20,14 +24,14 @@ import { PercentBarChart } from "components/PercentBarChart/PercentBarChart";
 import { DynamicLineChart, dimensions } from "components/DynamicLineChart/DynamicLineChart";
 import { Item, PaddingX, Control } from "components/App/styled";
 
+const products = [AdrenalineRush250, AdrenalineRush500, LaysSalt80, LaysOnion80, pepsi300, pepsi600];
+
 export const App = hot(() => {
-  const pepsiCo = useMemo(() => groupBy(pepsiCoData, "net_id"), []);
-  const scuOptions = useMemo(() => getScuOptions(pepsiCo), []);
-
-  const [scuName, onSetScu] = useState(" ");
+  const scuOptions = useMemo(() => getScuOptions(products), []);
   const [scuValue, onSelectScu] = useState(null);
-
-  const memoizedPepsiData = useMemo(() => normalizeData(pepsiCo[scuValue]), [scuValue]);
+  const { start: prodStart, end: prodEnd, data: prodData } = useMemo(() => normalizeData(products[+scuValue]), [
+    scuValue,
+  ]);
 
   const [linesCount, onSetLinesCount] = useState(10);
   const [start, onSetStart] = useState(new Date(2017, 11, 1));
@@ -59,9 +63,23 @@ export const App = hot(() => {
           onChange={onSetLinesCount}
         />
         <PaddingX />
-        <DatePicker label="from" id="from" type="date" value={start} onChange={onSetStart} />
+        <DatePicker
+          disabled={scuValue !== null}
+          label="from"
+          id="from"
+          type="date"
+          value={scuValue !== null ? prodStart : start}
+          onChange={onSetStart}
+        />
         <PaddingX />
-        <DatePicker label="to" id="to" type="date" value={end} onChange={onSetEnd} />
+        <DatePicker
+          disabled={scuValue !== null}
+          label="to"
+          id="to"
+          type="date"
+          value={scuValue !== null ? prodEnd : end}
+          onChange={onSetEnd}
+        />
         <PaddingX />
         <Dropdown
           label="dimension"
@@ -72,22 +90,21 @@ export const App = hot(() => {
           onChange={([{ value }]) => onSetDimension(value)}
         />
         <PaddingX />
-        <AutoComplete
+        <Dropdown
           label="Товар"
           options={scuOptions}
-          value={scuName}
-          onChange={(value) => {
-            onSetScu(value ? value : " ");
-            if (!value) {
-              onSelectScu(null);
-            }
-          }}
-          onSelect={({ value }) => onSelectScu(value)}
+          value={scuValue}
+          onChange={([{ value }]) => onSelectScu(value)}
           width="434px"
-          menuHeight="249px"
+          menuHeight="264px"
         />
       </Control>
-      <DynamicLineChart dimension={currDimension} data={dynamicLineChartData} start={start} end={end} />
+      <DynamicLineChart
+        dimension={currDimension}
+        data={scuValue !== null ? prodData : dynamicLineChartData}
+        start={scuValue !== null ? prodStart : start}
+        end={scuValue !== null ? prodEnd : end}
+      />
       <Item>
         <RaisedButton onClick={() => onLineChartRandom(lineChartRandomData())}>Randomize data</RaisedButton>
         <br />

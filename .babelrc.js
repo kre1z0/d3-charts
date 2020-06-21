@@ -34,6 +34,7 @@ const plugins = [
 module.exports = {
   plugins,
   presets,
+  ignore: ["./src/assets/products/"],
   env: {
     test: {
       plugins: ["@babel/plugin-transform-modules-commonjs"],

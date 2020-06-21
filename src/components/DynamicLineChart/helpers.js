@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback } from "react";
-import ru from "new-date-fns/locale/ru";
+import ru from "date-fns/locale/ru";
 
 function isTouchEvent(event) {
   return !!event.touches;

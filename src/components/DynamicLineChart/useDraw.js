@@ -1,10 +1,10 @@
 import React from "react";
 import * as d3 from "d3";
-import eachMonthOfInterval from "new-date-fns/eachMonthOfInterval";
-import closestTo from "new-date-fns/closestTo";
-import format from "new-date-fns/format";
-import isFirstDayOfMonth from "new-date-fns/isFirstDayOfMonth";
-import isLastDayOfMonth from "new-date-fns/isLastDayOfMonth";
+import eachMonthOfInterval from "date-fns/eachMonthOfInterval";
+import closestTo from "date-fns/closestTo";
+import format from "date-fns/format";
+import isFirstDayOfMonth from "date-fns/isFirstDayOfMonth";
+import isLastDayOfMonth from "date-fns/isLastDayOfMonth";
 import { useCallback, useRef, useEffect, useState } from "react";
 import { renderToString } from "react-dom/server";
 
@@ -74,6 +74,7 @@ export function useDraw(props) {
           (interval, i, array) => {
             const closestDate = i !== array.length - 1 ? closestTo(interval, dates) : end;
             const index = itemMaxLength.values.findIndex(({ date }) => +date === +closestDate);
+
             return index;
           },
         );

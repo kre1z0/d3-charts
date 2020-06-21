@@ -16,7 +16,7 @@ module.exports = {
   resolve: {
     modules: [src, nodeModules],
     extensions: [".ts", ".tsx", ".js", "jsx", ".json"],
-    alias: { "react-dom": "@hot-loader/react-dom", "~": src, "@evergis/ui": ui },
+    alias: { "react-dom": "@hot-loader/react-dom", "~": src },
   },
 
   module: {
@@ -35,7 +35,7 @@ module.exports = {
             },
           },
         ],
-        include: [src, /node_modules\/(@evergis)/, /node_modules\\(@evergis)/],
+        include: [src],
       },
       {
         test: /\.jsx?$/,
