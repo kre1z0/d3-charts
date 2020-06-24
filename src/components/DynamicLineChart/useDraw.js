@@ -34,7 +34,7 @@ export function useDraw(props) {
   const timestamp = useRef(null);
   const speed = useRef(null);
   const animation = useRef(null);
-  const prevPath = useRef({});
+  const prevPath = useRef(null);
   const tooltip = useRef({});
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export function useDraw(props) {
     dragPositionX.current = null;
     currentX.current = 0;
     animation.current = null;
-    prevPath.current = {};
+    prevPath.current = null;
     tooltip.current = {};
   }, [props.data, props.dimension]);
 
@@ -155,6 +155,8 @@ export function useDraw(props) {
           .append("g")
           .attr("class", chartContainer)
           .attr("transform", `translate(-${Math.abs(translateX)}, 0)`);
+
+        const interactiveLinesContainer = chart.append("g");
 
         /** Share start **/
         const shareContainer = chart.append("g").attr("class", shareClass);
@@ -430,6 +432,7 @@ export function useDraw(props) {
             .style("cursor", "pointer")
             .attr("stroke", "transparent")
             .attr("stroke-width", interactiveLinesStrokeWith);
+          interactiveLinesContainer.node().appendChild(interactive.node());
 
           const chartWidth = chart.node().getBoundingClientRect().width;
 
@@ -508,26 +511,22 @@ export function useDraw(props) {
               }
             })
             .on("click", () => {
-              if (prevPath.current.path && prevPath.current.path !== path) {
-                prevPath.current.path.attr("stroke", colors[i] || colors[0]);
-                prevPath.current.path.attr("stroke-width", 1);
+              if (prevPath.current && prevPath.current !== interactive) {
+                prevPath.current.attr("stroke", "transparent");
+                prevPath.current.attr("stroke-width", interactiveLinesStrokeWith);
+                prevPath.current.style("cursor", "pointer");
               }
 
-              if (prevPath.current.interactivePath && prevPath.current.interactivePath !== interactive) {
-                prevPath.current.interactivePath.style("cursor", "pointer");
+              if (prevPath.current && prevPath.current !== interactive) {
               }
 
-              if (prevPath.current.path !== path) {
-                path.attr("stroke", "rgba(97, 194, 221, 1)");
-                path.attr("stroke-width", 2);
-              }
-
-              if (prevPath.current.interactivePath !== interactive) {
+              if (prevPath.current !== interactive) {
+                interactive.attr("stroke", "rgba(97, 194, 221, 1)");
+                interactive.attr("stroke-width", 2);
                 interactive.style("cursor", "default");
               }
 
-              prevPath.current.path = path;
-              prevPath.current.interactivePath = interactive;
+              prevPath.current = interactive;
             });
         }
 
@@ -536,6 +535,7 @@ export function useDraw(props) {
         yAxisNew.classList.add(yAxisClass);
 
         svg.node().appendChild(yAxisNew);
+        chart.node().appendChild(interactiveLinesContainer.node());
 
         d3.selectAll(`.${tickContainerClass} text`).remove();
         d3.selectAll(`.${yAxisClass} line`).remove();
