@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { hot } from "react-hot-loader/root";
-import { DatePicker, RaisedButton, NumberInput, Dropdown } from "@evergis/ui";
+import { DatePicker, RaisedButton, NumberInput, Dropdown, FieldValue } from "@evergis/ui";
 
 import AdrenalineRush250 from "assets/products/AdrenalineRush250";
 import AdrenalineRush500 from "assets/products/AdrenalineRush500";
@@ -29,6 +29,7 @@ const products = [AdrenalineRush250, AdrenalineRush500, LaysSalt80, LaysOnion80,
 export const App = hot(() => {
   const scuOptions = useMemo(() => getScuOptions(products), []);
   const [scuValue, onSelectScu] = useState(null);
+
   const { start: prodStart, end: prodEnd, data: prodData } = useMemo(() => normalizeData(products[+scuValue]), [
     scuValue,
   ]);
@@ -51,7 +52,14 @@ export const App = hot(() => {
   return (
     <>
       <Control>
-        <RaisedButton onClick={() => onDynamicLineChartRandom(randomDynamicalData)}>Randomize data</RaisedButton>
+        <RaisedButton
+          onClick={() => {
+            onSelectScu(null);
+            onDynamicLineChartRandom(randomDynamicalData);
+          }}
+        >
+          Randomize data
+        </RaisedButton>
         <PaddingX />
         <NumberInput
           label="lines count"
@@ -98,6 +106,12 @@ export const App = hot(() => {
           width="434px"
           menuHeight="264px"
         />
+        {scuValue !== null && (
+          <>
+            <PaddingX />
+            <FieldValue field="products" value={prodData.length} />
+          </>
+        )}
       </Control>
       <DynamicLineChart
         dimension={currDimension}
