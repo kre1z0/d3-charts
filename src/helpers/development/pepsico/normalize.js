@@ -15,12 +15,13 @@ export const normalizeData = (data) => {
   for (let i = 0; i < groups.length; i++) {
     const group = grouped[groups[i]];
 
-    groupedByDate[groups[i]] = groupBy(grouped[groups[i]], "FIELD1");
+    groupedByDate[groups[i]] = groupBy(grouped[groups[i]], "date");
 
     for (let i = 0; i < group.length; i++) {
       const item = group[i];
-      const { FIELD1 } = item;
-      const date = parse(FIELD1, formatString, new Date());
+      const { date: itemDate } = item;
+      const date = parse(itemDate, formatString, new Date());
+
       item.parsedDate = date;
 
       start = Math.min(start, +date);

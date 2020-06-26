@@ -1,13 +1,10 @@
 import React, { useState, useMemo } from "react";
 import { hot } from "react-hot-loader/root";
 import { DatePicker, RaisedButton, NumberInput, Dropdown, FieldValue } from "@evergis/ui";
+import { groupBy, values } from "lodash";
 
-import AdrenalineRush250 from "assets/products/AdrenalineRush250";
-import AdrenalineRush500 from "assets/products/AdrenalineRush500";
-import LaysSalt80 from "assets/products/LaysSalt80";
-import LaysOnion80 from "assets/products/LaysOnion80";
-import pepsi300 from "assets/products/pepsi300";
-import pepsi600 from "assets/products/pepsi600";
+import squares from "assets/products/squares";
+import areas from "assets/products/areas";
 import { getScuOptions } from "helpers/development/pepsico/options";
 import { normalizeData } from "helpers/development/pepsico/normalize";
 import {
@@ -24,15 +21,36 @@ import { PercentBarChart } from "components/PercentBarChart/PercentBarChart";
 import { DynamicLineChart, dimensions } from "components/DynamicLineChart/DynamicLineChart";
 import { Item, PaddingX, Control } from "components/App/styled";
 
-const products = [AdrenalineRush250, AdrenalineRush500, LaysSalt80, LaysOnion80, pepsi300, pepsi600];
+const testProducts = {
+  squares,
+  areas,
+};
+
+const products = {};
+
+for (let i = 0; i < Object.keys(testProducts).length; i++) {
+  const key = Object.keys(testProducts)[i];
+  const item = testProducts[key];
+  const groupedItem = groupBy(item, "product_id");
+
+  products[key] = values(groupedItem);
+}
 
 export const App = hot(() => {
-  const scuOptions = useMemo(() => getScuOptions(products), []);
   const [scuValue, onSelectScu] = useState(null);
+  const [geoValue, onSelectGeo] = useState("squares");
 
-  const { start: prodStart, end: prodEnd, data: prodData } = useMemo(() => normalizeData(products[+scuValue]), [
-    scuValue,
-  ]);
+  const scuOptions = useMemo(() => getScuOptions(products[geoValue]), []);
+
+  const { start: prodStart, end: prodEnd, data: prodData } = useMemo(
+    () => normalizeData(products[geoValue][+scuValue]),
+    [geoValue, scuValue],
+  );
+
+  const areasOptions = [
+    { value: "squares", text: "Квадраты" },
+    { value: "areas", text: "Районы" },
+  ];
 
   const [linesCount, onSetLinesCount] = useState(10);
   const [start, onSetStart] = useState(new Date(2017, 11, 1));
@@ -97,7 +115,8 @@ export const App = hot(() => {
           options={dimensions.map((dimension) => ({ text: dimension, value: dimension }))}
           onChange={([{ value }]) => onSetDimension(value)}
         />
-        <PaddingX />
+      </Control>
+      <Control style={{ paddingTop: 0 }}>
         <Dropdown
           label="Товар"
           options={scuOptions}
@@ -106,10 +125,18 @@ export const App = hot(() => {
           width="434px"
           menuHeight="264px"
         />
+        <PaddingX />
+        <Dropdown
+          label="Геометрия"
+          options={areasOptions}
+          value={geoValue}
+          onChange={([{ value }]) => onSelectGeo(value)}
+          width="200px"
+        />
         {scuValue !== null && (
           <>
             <PaddingX />
-            <FieldValue field="products" value={prodData.length} />
+            <FieldValue field="lines" value={prodData.length} />
           </>
         )}
       </Control>
