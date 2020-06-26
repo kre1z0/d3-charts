@@ -5,6 +5,7 @@ import { groupBy, values } from "lodash";
 
 import squares from "assets/products/squares";
 import areas from "assets/products/areas";
+import points from "assets/products/points";
 import { getScuOptions } from "helpers/development/pepsico/options";
 import { normalizeData } from "helpers/development/pepsico/normalize";
 import {
@@ -24,6 +25,7 @@ import { Item, PaddingX, Control } from "components/App/styled";
 const testProducts = {
   squares,
   areas,
+  points,
 };
 
 const products = {};
@@ -50,6 +52,7 @@ export const App = hot(() => {
   const areasOptions = [
     { value: "squares", text: "Квадраты" },
     { value: "areas", text: "Районы" },
+    { value: "points", text: "Точки" },
   ];
 
   const [linesCount, onSetLinesCount] = useState(10);
