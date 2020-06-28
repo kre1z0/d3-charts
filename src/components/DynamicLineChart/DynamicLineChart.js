@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 
 import { onResize } from "./handlers";
 import { useDraw } from "./useDraw";
+import { useDrawShare } from "./useDrawShare";
 import { Container } from "./styled";
 
 export const DynamicLineChart = (props) => {
@@ -17,6 +18,10 @@ export const DynamicLineChart = (props) => {
 
     return () => window.removeEventListener("resize", () => onResize(args));
   }, [redords.node]);
+
+  useEffect(() => {
+    useDrawShare(redords);
+  }, [redords]);
 
   return <Container ref={ref} height={height} />;
 };

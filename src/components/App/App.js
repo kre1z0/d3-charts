@@ -52,7 +52,7 @@ export const App = hot(() => {
   const areasOptions = [
     { value: "squares", text: "Квадраты" },
     { value: "areas", text: "Районы" },
-    { value: "points", text: "Точки" },
+    { value: "points", text: "Округа" },
   ];
 
   const [linesCount, onSetLinesCount] = useState(10);
