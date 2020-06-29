@@ -47,12 +47,13 @@ export const normalizeData = (data) => {
       const parsedDate = parse(day, formatString, new Date());
 
       if (groupDay) {
-        const { price } = groupDay[0];
+        const { price, net_id } = groupDay[0];
 
         const normalizePrice = price.includes(",") ? +price.replace(",", ".") : +price;
 
         prevValue = normalizePrice;
         values.push({
+          net_id,
           date: parsedDate,
           value: normalizePrice,
         });

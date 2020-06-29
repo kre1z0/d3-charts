@@ -426,11 +426,12 @@ export function useDraw(props) {
               }
 
               const index = Math.round((currX - margin.left - yScaleWidth) / dayWidthPx);
-              const { value, date } = item.values[index];
+              const { value, date, net_id } = item.values[index];
+
               const y = Math.round(yScale(value));
 
               const text = tooltip.current.text
-                .text(`${value}${prefix}, ${format(date, "d")}д`)
+                .text(`${value}${prefix}, ${format(date, "d")}д ${net_id ? `, net_id ${net_id}` : ""}`)
                 .attr("transform", `translate(${tooltipMargin * 2 + 10 + 4}, ${0})`);
 
               if (currX !== getTranslate(tooltip.current.container)) {

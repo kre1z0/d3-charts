@@ -1,4 +1,3 @@
-import { useRef, useEffect, useCallback } from "react";
 import ru from "date-fns/locale/ru";
 
 function isTouchEvent(event) {
@@ -41,18 +40,6 @@ function throttle(func, limit) {
       }, limit - (Date.now() - lastRan));
     }
   };
-}
-
-export function useThrottle(cb, delay) {
-  const cbRef = useRef(cb);
-  useEffect(() => {
-    cbRef.current = cb;
-  });
-  return useCallback(
-    // useDebounce is the same except we use debounceImpl here
-    throttle((...args) => cbRef.current(...args), delay),
-    [delay],
-  );
 }
 
 export function animate({ duration = 144, timing, draw }) {
