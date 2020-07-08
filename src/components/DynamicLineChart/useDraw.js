@@ -21,7 +21,7 @@ import {
 
 const dayPx = {
   months: 4,
-  weeks: 20,
+  weeks: 14,
   days: 100,
 };
 
@@ -49,7 +49,8 @@ export function useDraw(props) {
     (node) => {
       if (node !== null && Array.isArray(props.data) && props.data.length) {
         const { height, data, colors, start, end, prefix, margin, dimension } = props;
-        const dayWidthPx = dayPx[dimension];
+        let dayWidthPx = dayPx[dimension];
+
         const tooltipHeight = 20;
         const tooltipMargin = 5;
         const isMobile = detectMob();
@@ -68,7 +69,12 @@ export function useDraw(props) {
         const itemMaxLength = data[indexMaxCount];
         const dates = itemMaxLength.values.map(({ date }) => date);
         const intervals = isMonths ? eachMonthOfInterval({ start, end }) : eachWeekOfInterval({ start, end });
-        const widthByItems = (itemMaxLength.values.length - 1) * dayWidthPx;
+        let widthByItems = (itemMaxLength.values.length - 1) * dayWidthPx;
+
+        if (width > widthByItems + +margin.left + margin.right) {
+          dayWidthPx = (width - margin.left - margin.right - 64) / (itemMaxLength.values.length - 1);
+          widthByItems = (itemMaxLength.values.length - 1) * dayWidthPx;
+        }
 
         const vertexIndices = (+end !== +intervals[intervals.length - 1] ? [...intervals, end] : intervals).map(
           (interval, i, array) => {
