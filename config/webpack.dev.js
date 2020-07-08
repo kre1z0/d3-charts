@@ -6,7 +6,7 @@ const CircularDependencyPlugin = require("circular-dependency-plugin");
 
 const { entry, dist, root, env } = require("./paths");
 
-const port = process.env.PORT || 4004;
+const port = process.env.PORT || 4044;
 
 module.exports = merge(common, {
   entry: {

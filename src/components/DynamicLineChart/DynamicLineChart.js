@@ -26,7 +26,7 @@ export const DynamicLineChart = (props) => {
   return <Container ref={ref} height={height} />;
 };
 
-export const dimensions = ["months", "days"];
+export const dimensions = ["months", "weeks", "days"];
 
 DynamicLineChart.defaultProps = {
   height: 200,
@@ -34,6 +34,6 @@ DynamicLineChart.defaultProps = {
   colors: ["rgba(85, 103, 116, 1)"],
   prefix: "₽",
   margin: { bottom: 20, top: 20, left: 20, right: 44 },
-  /** months, days **/
+  /** months, weeks, days **/
   dimension: "months",
 };

@@ -1,6 +1,7 @@
 import React from "react";
 import * as d3 from "d3";
 import eachMonthOfInterval from "date-fns/eachMonthOfInterval";
+import eachWeekOfInterval from "date-fns/eachWeekOfInterval";
 import closestTo from "date-fns/closestTo";
 import format from "date-fns/format";
 import isFirstDayOfMonth from "date-fns/isFirstDayOfMonth";
@@ -20,6 +21,7 @@ import {
 
 const dayPx = {
   months: 4,
+  weeks: 20,
   days: 100,
 };
 
@@ -60,11 +62,12 @@ export function useDraw(props) {
         const shortMonthsLower = getShortMonts(true);
         const xLabelMinWidth = 30;
         const isDays = dimension === "days";
+        const isDimension = dimension === "months" || dimension === "weeks";
         const isMonths = dimension === "months";
         const indexMaxCount = data.reduce((acc, { values }, index) => (acc > values.length ? acc : index), 0);
         const itemMaxLength = data[indexMaxCount];
         const dates = itemMaxLength.values.map(({ date }) => date);
-        const intervals = eachMonthOfInterval({ start, end });
+        const intervals = isMonths ? eachMonthOfInterval({ start, end }) : eachWeekOfInterval({ start, end });
         const widthByItems = (itemMaxLength.values.length - 1) * dayWidthPx;
 
         const vertexIndices = (+end !== +intervals[intervals.length - 1] ? [...intervals, end] : intervals).map(
@@ -173,8 +176,8 @@ export function useDraw(props) {
           .attr("font-size", 10)
           .style("pointer-events", "none");
 
-        for (let i = 0; i < (isMonths ? vertexIndices : dates).length; i++) {
-          const date = isMonths ? intervals[i] : dates[i];
+        for (let i = 0; i < (isDimension ? vertexIndices : dates).length; i++) {
+          const date = isDimension ? intervals[i] : dates[i];
           const skipLabel = i === 0 && vertexIndices[i + 1] * dayWidthPx < xLabelMinWidth;
 
           if ((date && !skipLabel) || isDays) {
@@ -350,7 +353,7 @@ export function useDraw(props) {
           /** Dataset **/
           const item = data[i];
 
-          const dataset = isMonths
+          const dataset = isDimension
             ? d3.range(vertexIndices.length).map((n) => ({ y: item.values[vertexIndices[n]].value }))
             : d3.range(itemMaxLength.values.length).map((_, index) => ({ y: item.values[index].value }));
 
