@@ -85,13 +85,6 @@ export function useDraw(props) {
           },
         );
 
-        const getMaxTranslateX = () => {
-          const width = Math.min(window.innerWidth, node.getBoundingClientRect().width);
-          const noTranslate = widthByItems < width - margin.left - margin.right - yScaleWidth;
-
-          return noTranslate ? 0 : Math.ceil(widthByItems - (width - margin.left - margin.right - yScaleWidth));
-        };
-
         /** SVG **/
         const body = d3.select("body");
         d3.select(node).select("svg").remove();
@@ -153,6 +146,13 @@ export function useDraw(props) {
         const getX = (index) => {
           const left = margin.left + yScaleWidth;
           return index > 0 ? (isDays ? index : vertexIndices[index]) * dayWidthPx + left : left;
+        };
+
+        const getMaxTranslateX = () => {
+          const width = Math.min(window.innerWidth, node.getBoundingClientRect().width);
+          const noTranslate = widthByItems < width - margin.left - margin.right - yScaleWidth;
+
+          return noTranslate ? 0 : Math.ceil(widthByItems - (width - margin.left - margin.right - yScaleWidth));
         };
 
         const translateX = getMaxTranslateX();
@@ -362,13 +362,14 @@ export function useDraw(props) {
           const dataset = isDimension
             ? d3.range(vertexIndices.length).map((n) => ({ y: item.values[vertexIndices[n]].value }))
             : d3.range(itemMaxLength.values.length).map((_, index) => ({ y: item.values[index].value }));
+          const interpolate = d3.interpolateBasis(dataset.map(({ y }) => y));
 
           /** Path **/
           const line = d3
             .line()
             .x((d, i) => getX(i))
             .y((d) => yScale(d.y) + ticksStrokeWith)
-            .curve(d3.curveCatmullRom);
+            .curve(d3.curveBasis);
 
           const path = chart
             .append("path")
@@ -437,7 +438,7 @@ export function useDraw(props) {
               const index = Math.round((currX - margin.left - yScaleWidth) / dayWidthPx);
               const { value, date, net_id } = item.values[index];
 
-              const y = Math.round(yScale(value));
+              const y = yScale(interpolate((currX - margin.left - yScaleWidth) / chartWidth));
 
               const text = tooltip.current.text
                 .text(`${value}${prefix}, ${format(date, "d")}д ${net_id ? `, net_id ${net_id}` : ""}`)
